@@ -104,10 +104,8 @@
 		regulator-name = "csi-avdd";
 		regulator-min-microvolt = <2800000>;
 		regulator-max-microvolt = <2800000>;
-		startup-delay-us = <200>; /* 50 us + board delays */
+		startup-delay-us = <400>; /* 50 us + board delays */
 		enable-active-high;
-		regulator-always-on;
-		regulator-boot-on;
 		gpio = <&pio 3 14 GPIO_ACTIVE_HIGH>; /* PD14 */
 	};
 
@@ -124,7 +122,6 @@
 		startup-delay-us = <200>; /* 50 us + board delays */
 		enable-active-high;
 		regulator-always-on;
-		regulator-boot-on;
 		gpio = <&pio 3 14 GPIO_ACTIVE_HIGH>; /* PD14 */
 	};
 
@@ -133,7 +130,7 @@
 		regulator-name = "csi-dvdd";
 		regulator-min-microvolt = <1500000>;
 		regulator-max-microvolt = <1500000>;
-		startup-delay-us = <200>; /* 50 us + board delays */
+		startup-delay-us = <600>; /* 50 us + board delays */
 		enable-active-high;
 		gpio = <&pio 3 14 GPIO_ACTIVE_HIGH>; /* PD14 */
 	};
