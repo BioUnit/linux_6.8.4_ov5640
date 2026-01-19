@@ -289,8 +289,8 @@
 		clocks = <&ccu CLK_CSI_MCLK>;
 		clock-names = "xclk";
 
-		reset-gpios = <&pio 4 14 GPIO_ACTIVE_LOW>; /* PE14 */
-		powerdown-gpios = <&pio 4 15 GPIO_ACTIVE_HIGH>; /* PE15 */
+		reset-gpios = <&pio 4 14 GPIO_ACTIVE_HIGH>; /* PE14 */
+		powerdown-gpios = <&pio 4 15 GPIO_ACTIVE_LOW>; /* PE15 */
 		AVDD-supply = <&reg_cam_avdd>;
 		DOVDD-supply = <&reg_cam_dovdd>;
 		DVDD-supply = <&reg_cam_dvdd>;
