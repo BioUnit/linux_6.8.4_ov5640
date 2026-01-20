@@ -3974,6 +3974,8 @@ static int ov5640_probe(struct i2c_client *client)
 	pm_runtime_use_autosuspend(dev);
 	pm_runtime_put_autosuspend(dev);
 
+	dev_err(dev, "Probe finished\n");
+	
 	return 0;
 
 err_pm_runtime:
@@ -3985,6 +3987,7 @@ free_ctrls:
 entity_cleanup:
 	media_entity_cleanup(&sensor->sd.entity);
 	mutex_destroy(&sensor->lock);
+	dev_err(dev, "Probe failed\n");
 	return ret;
 }
 
