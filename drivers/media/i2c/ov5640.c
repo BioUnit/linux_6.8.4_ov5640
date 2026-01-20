@@ -2737,10 +2737,14 @@ static int ov5640_sensor_suspend(struct device *dev)
 
 static int ov5640_sensor_resume(struct device *dev)
 {
+	//devtag
+	dev_err(dev, "get drvdata...\n");
 	struct v4l2_subdev *sd = dev_get_drvdata(dev);
+	dev_err(dev, "to ov5640...\n");
 	struct ov5640_dev *ov5640 = to_ov5640_dev(sd);
-
+	dev_err(dev, "set power...\n");
 	return ov5640_set_power(ov5640, true);
+	dev_err(dev, "exit sensor resume\n");
 }
 
 /* --------------- Subdev Operations --------------- */
