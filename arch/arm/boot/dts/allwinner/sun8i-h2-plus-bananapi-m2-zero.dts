@@ -269,7 +269,6 @@
 		/* Parallel bus endpoint */
 		csi_from_ov5640: endpoint {
 			remote-endpoint = <&ov5640_to_csi>;
-			bus-type = <2>;
             		data-lanes = <1 2>;
 			hsync-active = <1>; /* Active high */
 			vsync-active = <0>; /* Active low */
@@ -302,7 +301,6 @@
 		port {
 			ov5640_to_csi: endpoint {
 				remote-endpoint = <&csi_from_ov5640>;
-				bus-type = <2>;
 				clock-lanes = <0>;
 				data-lanes = <1 2>;
 				link-frequencies = <24000000>;
