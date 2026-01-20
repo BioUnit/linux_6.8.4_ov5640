@@ -3930,23 +3930,30 @@ static int ov5640_probe(struct i2c_client *client)
 	ret = media_entity_pads_init(&sensor->sd.entity, 1, &sensor->pad);
 	if (ret)
 		return ret;
-
+	//devtag start
+	dev_err(dev, "checking regulator...\n");
 	ret = ov5640_get_regulators(sensor);
 	if (ret)
 		goto entity_cleanup;
 
 	mutex_init(&sensor->lock);
+	dev_err(dev, "regulators OK\n");
 
+	dev_err(dev, "checking controls...\n");
 	ret = ov5640_init_controls(sensor);
 	if (ret)
 		goto entity_cleanup;
 
+	dev_err(dev, "Controls OK\n");
+
+	dev_err(dev, "Checking sensor i2c...\n");
 	ret = ov5640_sensor_resume(dev);
 	if (ret) {
 		dev_err(dev, "failed to power on\n");
 		goto free_ctrls;
 	}
-
+	dev_err(dev, "I2C OK\n");
+	//devtag end
 	pm_runtime_set_active(dev);
 	pm_runtime_get_noresume(dev);
 	pm_runtime_enable(dev);
