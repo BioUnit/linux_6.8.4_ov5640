@@ -13,6 +13,7 @@
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/clock/sun8i-h3-ccu.h>
+#include <dt-bindings/media/video-interfaces.h>
 
 / {
 	model = "Banana Pi BPI-M2-Zero";
@@ -269,11 +270,12 @@
 		/* Parallel bus endpoint */
 		csi_from_ov5640: endpoint {
 			remote-endpoint = <&ov5640_to_csi>;
+			bus-type=<5>;
 			bus-width = <8>;
 			data-shift = <2>;
 			hsync-active = <1>; /* Active high */
 			vsync-active = <0>; /* Active low */
-			data-active = <1>;  /* Active high */
+			//data-active = <1>;  /* Active high */
 			pclk-sample = <1>;  /* Rising */
 		};
 	};
@@ -299,11 +301,12 @@
 		port {
 			ov5640_to_csi: endpoint {
 				remote-endpoint = <&csi_from_ov5640>;
+				bus-type=<5>;
 				bus-width = <8>;
 				data-shift = <2>;
 				hsync-active = <1>; /* Active high */
 				vsync-active = <0>; /* Active low */
-				data-active = <1>;  /* Active high */
+				//data-active = <1>;  /* Active high */
 				pclk-sample = <1>;  /* Rising */
 			};
 		};
