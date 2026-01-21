@@ -269,7 +269,8 @@
 		/* Parallel bus endpoint */
 		csi_from_ov5640: endpoint {
 			remote-endpoint = <&ov5640_to_csi>;
-            		data-lanes = <1 2>;
+			bus-width = <8>;
+			data-shift = <2>;
 			hsync-active = <1>; /* Active high */
 			vsync-active = <0>; /* Active low */
 			data-active = <1>;  /* Active high */
@@ -295,15 +296,11 @@
 		DOVDD-supply = <&reg_cam_dovdd>;
 		DVDD-supply = <&reg_cam_dvdd>;
 
-		bus-width = <8>;
-		data-shift = <2>;
-
 		port {
 			ov5640_to_csi: endpoint {
 				remote-endpoint = <&csi_from_ov5640>;
-				clock-lanes = <0>;
-				data-lanes = <1 2>;
-				link-frequencies = <24000000>;
+				bus-width = <8>;
+				data-shift = <2>;
 				hsync-active = <1>; /* Active high */
 				vsync-active = <0>; /* Active low */
 				data-active = <1>;  /* Active high */
