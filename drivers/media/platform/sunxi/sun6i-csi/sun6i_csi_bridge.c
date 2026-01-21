@@ -236,7 +236,7 @@ sun6i_csi_bridge_configure_parallel(struct sun6i_csi_device *csi_dev)
 	unsigned int flags = endpoint->bus.parallel.flags;
 	u32 field;
 	u32 value = SUN6I_CSI_IF_CFG_IF_CSI;
-
+	dev_err(dev, "Config parallel start...\n");
 	sun6i_csi_bridge_format(csi_dev, NULL, &field);
 
 	if (field == V4L2_FIELD_INTERLACED ||
@@ -314,6 +314,7 @@ sun6i_csi_bridge_configure_parallel(struct sun6i_csi_device *csi_dev)
 	}
 
 	regmap_write(regmap, SUN6I_CSI_IF_CFG_REG, value);
+	dev_err(dev, "Config parallel finished\n");
 }
 
 static void
@@ -608,6 +609,7 @@ static int sun6i_csi_bridge_link(struct sun6i_csi_device *csi_dev,
 				 struct v4l2_subdev *remote_subdev,
 				 bool enabled)
 {
+	dev_err(dev, "Bridge link start...\n");
 	struct device *dev = csi_dev->dev;
 	struct v4l2_subdev *subdev = &csi_dev->bridge.subdev;
 	struct media_entity *sink_entity = &subdev->entity;
@@ -638,7 +640,7 @@ static int sun6i_csi_bridge_link(struct sun6i_csi_device *csi_dev,
 			sink_entity->name, sink_pad_index);
 		return ret;
 	}
-
+	dev_err(dev, "Bridge link finished\n");
 	return 0;
 }
 
@@ -647,6 +649,7 @@ sun6i_csi_bridge_notifier_bound(struct v4l2_async_notifier *notifier,
 				struct v4l2_subdev *remote_subdev,
 				struct v4l2_async_connection *async_subdev)
 {
+	dev_err(dev, "Bound start...\n");
 	struct sun6i_csi_device *csi_dev =
 		container_of(notifier, struct sun6i_csi_device,
 			     bridge.notifier);
@@ -680,7 +683,7 @@ sun6i_csi_bridge_notifier_bound(struct v4l2_async_notifier *notifier,
 		if (ret)
 			return ret;
 	}
-
+	dev_err(dev, "Bound finished\n");
 	return sun6i_csi_bridge_link(csi_dev, SUN6I_CSI_BRIDGE_PAD_SINK,
 				     remote_subdev, enabled);
 }
@@ -688,6 +691,7 @@ sun6i_csi_bridge_notifier_bound(struct v4l2_async_notifier *notifier,
 static int
 sun6i_csi_bridge_notifier_complete(struct v4l2_async_notifier *notifier)
 {
+	dev_err(dev, "Bridge notifier start...\n");
 	struct sun6i_csi_device *csi_dev =
 		container_of(notifier, struct sun6i_csi_device,
 			     bridge.notifier);
@@ -696,6 +700,7 @@ sun6i_csi_bridge_notifier_complete(struct v4l2_async_notifier *notifier)
 	if (csi_dev->isp_available)
 		return 0;
 
+	dev_err(dev, "Bridge notifier finished\n");
 	return v4l2_device_register_subdev_nodes(v4l2_dev);
 }
 
@@ -780,6 +785,8 @@ int sun6i_csi_bridge_setup(struct sun6i_csi_device *csi_dev)
 	};
 	int ret;
 
+	dev_err(dev, "Bridge setup start...\n");
+	
 	mutex_init(&bridge->lock);
 
 	/* V4L2 Subdev */
@@ -842,6 +849,8 @@ int sun6i_csi_bridge_setup(struct sun6i_csi_device *csi_dev)
 		goto error_v4l2_async_notifier;
 	}
 
+	dev_err(dev, "Bridge setup finished\n");
+	
 	return 0;
 
 error_v4l2_async_notifier:
