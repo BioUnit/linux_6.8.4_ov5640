@@ -661,7 +661,8 @@ sun6i_csi_bridge_notifier_bound(struct v4l2_async_notifier *notifier,
 	bool enabled = false;
 	int ret;
 
-	dev_err(csi_dev, "Bound start...\n");
+	struct device *dev = csi_dev->dev;
+	dev_err(dev, "Bound start...\n");
 	
 	switch (source->endpoint.base.port) {
 	case SUN6I_CSI_PORT_PARALLEL:
@@ -685,7 +686,7 @@ sun6i_csi_bridge_notifier_bound(struct v4l2_async_notifier *notifier,
 		if (ret)
 			return ret;
 	}
-	dev_err(csi_dev, "Bound finished\n");
+	dev_err(dev, "Bound finished\n");
 	return sun6i_csi_bridge_link(csi_dev, SUN6I_CSI_BRIDGE_PAD_SINK,
 				     remote_subdev, enabled);
 }
@@ -697,11 +698,12 @@ sun6i_csi_bridge_notifier_complete(struct v4l2_async_notifier *notifier)
 		container_of(notifier, struct sun6i_csi_device,
 			     bridge.notifier);
 	struct v4l2_device *v4l2_dev = &csi_dev->v4l2.v4l2_dev;
-	dev_err(v4l2_dev, "Bridge notifier start...\n");
+	struct device *dev = csi_dev->dev;
+	dev_err(dev, "Bridge notifier start...\n");
 	if (csi_dev->isp_available)
 		return 0;
 
-	dev_err(v4l2_dev, "Bridge notifier finished\n");
+	dev_err(dev, "Bridge notifier finished\n");
 	return v4l2_device_register_subdev_nodes(v4l2_dev);
 }
 
