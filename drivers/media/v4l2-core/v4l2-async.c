@@ -638,7 +638,7 @@ err_unlock:
 int v4l2_async_nf_register(struct v4l2_async_notifier *notifier)
 {
 	if (WARN_ON(!notifier->v4l2_dev == !notifier->sd))
-		printk("ERROR EINVAL...\n");
+		//printk("ERROR EINVAL...\n");
 		return -EINVAL;
 
 	return __v4l2_async_nf_register(notifier);
