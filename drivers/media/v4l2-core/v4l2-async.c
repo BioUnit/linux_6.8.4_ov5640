@@ -213,7 +213,11 @@ v4l2_async_find_match(struct v4l2_async_notifier *notifier,
 static bool v4l2_async_match_equal(struct v4l2_async_match_desc *match1,
 				   struct v4l2_async_match_desc *match2)
 {
+	dev_err(sd->dev, "Checking match...\n");
 	if (match1->type != match2->type)
+		dev_err(sd->dev, "Error, Match is false\n");
+		dev_err(sd->dev, "Match1 type is %d\n", match1->type);
+		dev_err(sd->dev, "Match2 type is %d\n", match2->type);
 		return false;
 
 	switch (match1->type) {
@@ -259,7 +263,7 @@ static bool
 v4l2_async_nf_can_complete(struct v4l2_async_notifier *notifier)
 {
 	struct v4l2_async_connection *asc;
-
+	
 	if (!list_empty(&notifier->waiting_list))
 		return false;
 
@@ -349,7 +353,7 @@ static int v4l2_async_match_notify(struct v4l2_async_notifier *notifier,
 	bool registered = false;
 	int ret;
 
-	//printk("ANYNC MATCH START...\n");
+	dev_err(sd->dev, "Async match notify start...\n");
 	
 	if (list_empty(&sd->asc_list)) {
 		ret = __v4l2_device_register_subdev(v4l2_dev, sd, sd->owner);
@@ -407,7 +411,7 @@ static int v4l2_async_match_notify(struct v4l2_async_notifier *notifier,
 	 */
 	subdev_notifier->parent = notifier;
 
-	//printk("ANYNC MATCH FINISHED\n");
+	dev_err(sd->dev, "Async match notify finished\n");
 	
 	return v4l2_async_nf_try_all_subdevs(subdev_notifier);
 
