@@ -596,8 +596,6 @@ static int __v4l2_async_nf_register(struct v4l2_async_notifier *notifier)
 {
 	struct v4l2_async_connection *asc;
 	int ret;
-
-	//printk("REGISTERING...\n");
 	
 	mutex_lock(&list_lock);
 
@@ -619,8 +617,6 @@ static int __v4l2_async_nf_register(struct v4l2_async_notifier *notifier)
 	list_add(&notifier->notifier_entry, &notifier_list);
 
 	mutex_unlock(&list_lock);
-
-	//printk("REGISTERED\n");
 	
 	return 0;
 
@@ -779,6 +775,8 @@ int v4l2_async_subdev_endpoint_add(struct v4l2_subdev *sd,
 {
 	struct v4l2_async_subdev_endpoint *ase;
 
+	dev_err(sd->dev, "Adding endpoint...\n");
+	
 	ase = kmalloc(sizeof(*ase), GFP_KERNEL);
 	if (!ase)
 		return -ENOMEM;
@@ -787,6 +785,8 @@ int v4l2_async_subdev_endpoint_add(struct v4l2_subdev *sd,
 	list_add(&ase->async_subdev_endpoint_entry,
 		 &sd->async_subdev_endpoint_list);
 
+	dev_err(sd->dev, "Endpoint added\n");
+	
 	return 0;
 }
 EXPORT_SYMBOL_GPL(v4l2_async_subdev_endpoint_add);
@@ -809,6 +809,8 @@ int __v4l2_async_register_subdev(struct v4l2_subdev *sd, struct module *module)
 	struct v4l2_async_connection *asc;
 	int ret;
 
+	dev_err(sd->dev, "Starting register subdev...\n");
+	
 	INIT_LIST_HEAD(&sd->asc_list);
 
 	/*
@@ -854,6 +856,8 @@ int __v4l2_async_register_subdev(struct v4l2_subdev *sd, struct module *module)
 
 	mutex_unlock(&list_lock);
 
+	dev_err(sd->dev, "Register subdev finished\n");
+	
 	return 0;
 
 err_unbind:
