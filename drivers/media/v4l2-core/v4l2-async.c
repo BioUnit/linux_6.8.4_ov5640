@@ -183,7 +183,7 @@ v4l2_async_find_match(struct v4l2_async_notifier *notifier,
 		      struct v4l2_subdev *sd,
 		      struct v4l2_async_match_desc *match);
 	struct v4l2_async_connection *asc;
-
+	printk("SEARHING MATCH...\n");
 	list_for_each_entry(asc, &notifier->waiting_list, asc_entry) {
 		/* bus_type has been verified valid before */
 		switch (asc->match.type) {
@@ -198,12 +198,12 @@ v4l2_async_find_match(struct v4l2_async_notifier *notifier,
 			WARN_ON(true);
 			return NULL;
 		}
-
+		printk("MATCH FOUND\n");
 		/* match cannot be NULL here */
 		if (match(notifier, sd, &asc->match))
 			return asc;
 	}
-
+	printk("NO MATCH FOUND\n");
 	return NULL;
 }
 
@@ -347,6 +347,8 @@ static int v4l2_async_match_notify(struct v4l2_async_notifier *notifier,
 	bool registered = false;
 	int ret;
 
+	printk("ANYNC MATCH START...\n");
+	
 	if (list_empty(&sd->asc_list)) {
 		ret = __v4l2_device_register_subdev(v4l2_dev, sd, sd->owner);
 		if (ret < 0)
@@ -403,6 +405,8 @@ static int v4l2_async_match_notify(struct v4l2_async_notifier *notifier,
 	 */
 	subdev_notifier->parent = notifier;
 
+	printk("ANYNC MATCH FINISHED\n");
+	
 	return v4l2_async_nf_try_all_subdevs(subdev_notifier);
 
 err_call_unbind:
@@ -590,6 +594,8 @@ static int __v4l2_async_nf_register(struct v4l2_async_notifier *notifier)
 	struct v4l2_async_connection *asc;
 	int ret;
 
+	printk("REGISTERING...\n");
+	
 	mutex_lock(&list_lock);
 
 	list_for_each_entry(asc, &notifier->waiting_list, asc_entry) {
@@ -611,6 +617,8 @@ static int __v4l2_async_nf_register(struct v4l2_async_notifier *notifier)
 
 	mutex_unlock(&list_lock);
 
+	printk("REGISTERED\n");
+	
 	return 0;
 
 err_unbind:
@@ -628,6 +636,7 @@ err_unlock:
 int v4l2_async_nf_register(struct v4l2_async_notifier *notifier)
 {
 	if (WARN_ON(!notifier->v4l2_dev == !notifier->sd))
+		printk("ERROR EINVAL...\n");
 		return -EINVAL;
 
 	return __v4l2_async_nf_register(notifier);
