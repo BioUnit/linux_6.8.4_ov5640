@@ -137,7 +137,7 @@ static bool match_fwnode(struct v4l2_async_notifier *notifier,
 	if (!list_empty(&sd->async_subdev_endpoint_list)) {
 		struct v4l2_async_subdev_endpoint *ase;
 
-		dev_dbg(sd->dev,
+		dev_err(sd->dev,
 			"v4l2-async: endpoint fwnode list available, looking for %pfw\n",
 			match->fwnode);
 
@@ -153,7 +153,7 @@ static bool match_fwnode(struct v4l2_async_notifier *notifier,
 				return true;
 		}
 
-		dev_dbg(sd->dev, "async: no endpoint matched\n");
+		dev_err(sd->dev, "async: no endpoint matched\n");
 
 		return false;
 	}
@@ -183,8 +183,8 @@ v4l2_async_find_match(struct v4l2_async_notifier *notifier,
 		      struct v4l2_subdev *sd,
 		      struct v4l2_async_match_desc *match);
 	struct v4l2_async_connection *asc;
-	
-	dev_err(sd->v4l2_dev->dev, "SEARHING MATCH...\n");
+
+	dev_err(sd->dev, "SEARHING MATCH...\n");
 	
 	list_for_each_entry(asc, &notifier->waiting_list, asc_entry) {
 		/* bus_type has been verified valid before */
@@ -200,12 +200,12 @@ v4l2_async_find_match(struct v4l2_async_notifier *notifier,
 			WARN_ON(true);
 			return NULL;
 		}
-		dev_err(sd->v4l2_dev->dev, "MATCH FOUND\n");
+		dev_err(sd->dev, "MATCH FOUND\n");
 		/* match cannot be NULL here */
 		if (match(notifier, sd, &asc->match))
 			return asc;
 	}
-	dev_err(sd->v4l2_dev->dev, "ERROR, NO MATCH FOUND\n");
+	dev_err(sd->dev, "ERROR, NO MATCH FOUND\n");
 	return NULL;
 }
 
