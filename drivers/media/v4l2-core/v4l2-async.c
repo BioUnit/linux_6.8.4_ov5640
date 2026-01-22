@@ -183,7 +183,9 @@ v4l2_async_find_match(struct v4l2_async_notifier *notifier,
 		      struct v4l2_subdev *sd,
 		      struct v4l2_async_match_desc *match);
 	struct v4l2_async_connection *asc;
-	printk("SEARHING MATCH...\n");
+	
+	dev_err(sd->v4l2_dev->dev, "SEARHING MATCH...\n");
+	
 	list_for_each_entry(asc, &notifier->waiting_list, asc_entry) {
 		/* bus_type has been verified valid before */
 		switch (asc->match.type) {
