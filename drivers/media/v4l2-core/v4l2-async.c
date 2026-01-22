@@ -188,7 +188,6 @@ v4l2_async_find_match(struct v4l2_async_notifier *notifier,
 	
 	list_for_each_entry(asc, &notifier->waiting_list, asc_entry) {
 		/* bus_type has been verified valid before */
-		dev_err(sd->dev, "Match type is %d\n", asc->match.type);
 		switch (asc->match.type) {
 		case V4L2_ASYNC_MATCH_TYPE_I2C:
 			match = match_i2c;
@@ -201,6 +200,7 @@ v4l2_async_find_match(struct v4l2_async_notifier *notifier,
 			WARN_ON(true);
 			return NULL;
 		}
+		dev_err(sd->dev, "Match type is %d\n", asc->match.type);
 		/* match cannot be NULL here */
 		if (match(notifier, sd, &asc->match))
 			dev_err(sd->dev, "MATCH FOUND\n");
