@@ -267,10 +267,11 @@
 	status = "okay";
 
 	port {
+		#address-cells = <1>;
+		#size-cells = <0>;
 		/* Parallel bus endpoint */
 		csi_from_ov5640: endpoint {
 			remote-endpoint = <&ov5640_to_csi>;
-			bus-type=<5>;
 			bus-width = <8>;
 			data-shift = <2>;
 			hsync-active = <1>; /* Active high */
@@ -291,6 +292,7 @@
 		pinctrl-0 = <&csi_mclk_pin>;
 		clocks = <&ccu CLK_CSI_MCLK>;
 		clock-names = "xclk";
+		clock-frequency = <24000000>;
 
 		reset-gpios = <&pio 4 14 GPIO_ACTIVE_LOW>; /* PE14 */
 		powerdown-gpios = <&pio 4 15 GPIO_ACTIVE_HIGH>; /* PE15 */
@@ -299,9 +301,10 @@
 		DVDD-supply = <&reg_cam_dvdd>;
 
 		port {
+			#address-cells = <1>;
+			#size-cells = <0>;
 			ov5640_to_csi: endpoint {
 				remote-endpoint = <&csi_from_ov5640>;
-				bus-type=<5>;
 				bus-width = <8>;
 				data-shift = <2>;
 				hsync-active = <1>; /* Active high */
