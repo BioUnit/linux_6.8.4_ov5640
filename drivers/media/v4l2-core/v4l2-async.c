@@ -184,7 +184,7 @@ v4l2_async_find_match(struct v4l2_async_notifier *notifier,
 		      struct v4l2_async_match_desc *match);
 	struct v4l2_async_connection *asc;
 	
-	//dev_err(sd->v4l2_dev->dev, "SEARHING MATCH...\n");
+	dev_err(sd->v4l2_dev->dev, "SEARHING MATCH...\n");
 	
 	list_for_each_entry(asc, &notifier->waiting_list, asc_entry) {
 		/* bus_type has been verified valid before */
@@ -200,12 +200,12 @@ v4l2_async_find_match(struct v4l2_async_notifier *notifier,
 			WARN_ON(true);
 			return NULL;
 		}
-		//printk("MATCH FOUND\n");
+		dev_err(sd->v4l2_dev->dev, "MATCH FOUND\n");
 		/* match cannot be NULL here */
 		if (match(notifier, sd, &asc->match))
 			return asc;
 	}
-	//printk("NO MATCH FOUND\n");
+	dev_err(sd->v4l2_dev->dev, "ERROR, NO MATCH FOUND\n");
 	return NULL;
 }
 
