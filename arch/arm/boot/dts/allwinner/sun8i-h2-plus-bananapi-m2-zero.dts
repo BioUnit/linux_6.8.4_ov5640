@@ -263,15 +263,17 @@
 	status = "okay";
 };
 
-&csi {
+&csi: camera@1cb0000 {
 	status = "okay";
+	compatible = "allwinner,sun6i-a31-csi";
+	reg = <0x01cb0000 0x1000>;
 
 	port {
-		#address-cells = <1>;
-		#size-cells = <0>;
+		//#address-cells = <1>;
+		//#size-cells = <0>;
 
-		parallel_from_ov5640: endpoint {
-			//remote-endpoint = <&ov5640_to_parallel>;
+		csi_ep: endpoint {
+			remote-endpoint = <&ov5640>;
 			bus-type = <MEDIA_BUS_TYPE_PARALLEL>;
 			bus-width = <8>;
 			data-shift = <2>;
