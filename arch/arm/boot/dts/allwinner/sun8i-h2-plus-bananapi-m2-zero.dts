@@ -269,16 +269,16 @@
 	port {
 		#address-cells = <1>;
 		#size-cells = <0>;
-		/* Parallel bus endpoint */
+
 		parallel_from_ov5640: endpoint {
 			//remote-endpoint = <&ov5640_to_parallel>;
 			bus-type = <MEDIA_BUS_TYPE_PARALLEL>;
 			bus-width = <8>;
 			data-shift = <2>;
-			hsync-active = <1>; /* Active high */
-			vsync-active = <0>; /* Active low */
-			//data-active = <1>;  /* Active high */
-			pclk-sample = <1>;  /* Rising */
+			hsync-active = <1>; 
+			vsync-active = <0>; 
+			//data-active = <1>;  
+			pclk-sample = <1>;  
 		};
 	};
 };
@@ -301,6 +301,7 @@
 		DOVDD-supply = <&reg_cam_dovdd>;
 		DVDD-supply = <&reg_cam_dvdd>;
 
+		/*
 		port {
 			#address-cells = <1>;
 			#size-cells = <0>;
@@ -308,11 +309,12 @@
 				bus-type = <MEDIA_BUS_TYPE_PARALLEL>;
 				bus-width = <8>;
 				data-shift = <2>;
-				hsync-active = <1>; /* Active high */
-				vsync-active = <0>; /* Active low */
-				//data-active = <1>;  /* Active high */
-				pclk-sample = <1>;  /* Rising */
+				hsync-active = <1>;
+				vsync-active = <0>;
+				//data-active = <1>;
+				pclk-sample = <1>;
 			};
 		};
+		*/
 	};
 };
