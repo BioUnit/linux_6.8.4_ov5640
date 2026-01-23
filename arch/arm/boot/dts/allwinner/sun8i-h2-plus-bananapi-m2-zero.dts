@@ -107,7 +107,7 @@
 		regulator-max-microvolt = <2800000>;
 		startup-delay-us = <400>; /* 50 us + board delays */
 		enable-active-high;
-		gpio = <&pio 3 14 GPIO_ACTIVE_HIGH>; /* PD14 */
+		//gpio = <&pio 3 14 GPIO_ACTIVE_HIGH>; /* PD14 */
 	};
 
 	reg_cam_dovdd: cam-dovdd {
@@ -270,8 +270,8 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 		/* Parallel bus endpoint */
-		csi_from_ov5640: endpoint {
-			remote-endpoint = <&ov5640_to_csi>;
+		parallel_from_ov5640: endpoint {
+			remote-endpoint = <&ov5640_to_parallel>;
 			bus-width = <8>;
 			data-shift = <2>;
 			hsync-active = <1>; /* Active high */
@@ -303,8 +303,8 @@
 		port {
 			#address-cells = <1>;
 			#size-cells = <0>;
-			ov5640_to_csi: endpoint {
-				remote-endpoint = <&csi_from_ov5640>;
+			ov5640_to_parallel: endpoint {
+			        remote-endpoint = <&parallel_from_ov5640>;
 				bus-width = <8>;
 				data-shift = <2>;
 				hsync-active = <1>; /* Active high */
