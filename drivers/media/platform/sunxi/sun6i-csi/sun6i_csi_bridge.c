@@ -292,7 +292,7 @@ sun6i_csi_bridge_configure_parallel(struct sun6i_csi_device *csi_dev)
 			value |= SUN6I_CSI_IF_CFG_CLK_POL_FALLING;
 		break;
 	default:
-		dev_warn(dev, "unsupported bus type: %d\n", endpoint->bus_type);
+		dev_err(dev, "unsupported bus type: %d\n", endpoint->bus_type);
 		break;
 	}
 
@@ -309,7 +309,7 @@ sun6i_csi_bridge_configure_parallel(struct sun6i_csi_device *csi_dev)
 		value |= SUN6I_CSI_IF_CFG_DATA_WIDTH_12;
 		break;
 	default:
-		dev_warn(dev, "unsupported bus width: %u\n", bus_width);
+		dev_err(dev, "unsupported bus width: %u\n", bus_width);
 		break;
 	}
 
@@ -422,8 +422,7 @@ static int sun6i_csi_bridge_s_stream(struct v4l2_subdev *subdev, int on)
 
 	remote_pad = media_pad_remote_pad_unique(local_pad);
 	if (IS_ERR(remote_pad)) {
-		dev_err(dev,
-			"zero or more than a single source connected to the bridge\n");
+		dev_err(dev, "zero or more than a single source connected to the bridge\n");
 		return PTR_ERR(remote_pad);
 	}
 
@@ -629,7 +628,7 @@ static int sun6i_csi_bridge_link(struct sun6i_csi_device *csi_dev,
 
 	source_pad_index = ret;
 
-	dev_dbg(dev, "creating %s:%u -> %s:%u link\n", source_entity->name,
+	dev_err(dev, "creating %s:%u -> %s:%u link\n", source_entity->name,
 		source_pad_index, sink_entity->name, sink_pad_index);
 
 	ret = media_create_pad_link(source_entity, source_pad_index,
@@ -666,9 +665,11 @@ sun6i_csi_bridge_notifier_bound(struct v4l2_async_notifier *notifier,
 	
 	switch (source->endpoint.base.port) {
 	case SUN6I_CSI_PORT_PARALLEL:
+		dev_err(dev, "Using parrarel port\n");
 		enabled = true;
 		break;
 	case SUN6I_CSI_PORT_MIPI_CSI2:
+		dev_err(dev, "Using mipi port\n");
 		enabled = !bridge->source_parallel.expected;
 		break;
 	default:
@@ -682,6 +683,7 @@ sun6i_csi_bridge_notifier_bound(struct v4l2_async_notifier *notifier,
 		 * Hook to the first available remote subdev to get v4l2 and
 		 * media devices and register the capture device then.
 		 */
+		dev_err(dev, "Using also ISP, but shouldn't?\n");
 		ret = sun6i_csi_isp_complete(csi_dev, remote_subdev->v4l2_dev);
 		if (ret)
 			return ret;
@@ -727,7 +729,7 @@ static int sun6i_csi_bridge_source_setup(struct sun6i_csi_device *csi_dev,
 	struct fwnode_handle *handle;
 	int ret;
 
-	dev_err(dev, "Source setup start...\n");
+	dev_err(dev, "CSI Bridge Source setup start...\n");
 	handle = fwnode_graph_get_endpoint_by_id(dev_fwnode(dev), port, 0, 0);
 	if (!handle)
 		return -ENODEV;
@@ -755,10 +757,7 @@ static int sun6i_csi_bridge_source_setup(struct sun6i_csi_device *csi_dev,
 		}
 	}
 
-	bridge_async_subdev =
-		v4l2_async_nf_add_fwnode_remote(notifier, handle,
-						struct
-						sun6i_csi_bridge_async_subdev);
+	bridge_async_subdev = v4l2_async_nf_add_fwnode_remote(notifier, handle, struct sun6i_csi_bridge_async_subdev);
 	if (IS_ERR(bridge_async_subdev)) {
 		ret = PTR_ERR(bridge_async_subdev);
 		goto complete;
@@ -769,9 +768,10 @@ static int sun6i_csi_bridge_source_setup(struct sun6i_csi_device *csi_dev,
 	source->expected = true;
 
 complete:
+	dev_err(dev, "CSI Bridge Source setup completed\n");
 	fwnode_handle_put(handle);
 
-	dev_err(dev, "Source setup finished\n");
+	dev_err(dev, "Error, CSI Bridge Source setup not completed\n");
 	return ret;
 }
 
@@ -790,7 +790,7 @@ int sun6i_csi_bridge_setup(struct sun6i_csi_device *csi_dev)
 	};
 	int ret;
 
-	dev_err(dev, "Bridge setup start...\n");
+	dev_err(dev, "CSI Bridge setup start...\n");
 	
 	mutex_init(&bridge->lock);
 
@@ -844,17 +844,15 @@ int sun6i_csi_bridge_setup(struct sun6i_csi_device *csi_dev)
 	sun6i_csi_bridge_source_setup(csi_dev, &bridge->source_parallel,
 				      SUN6I_CSI_PORT_PARALLEL,
 				      parallel_mbus_types);
-	sun6i_csi_bridge_source_setup(csi_dev, &bridge->source_mipi_csi2,
-				      SUN6I_CSI_PORT_MIPI_CSI2, NULL);
+	sun6i_csi_bridge_source_setup(csi_dev, &bridge->source_mipi_csi2, SUN6I_CSI_PORT_MIPI_CSI2, NULL);
 
 	ret = v4l2_async_nf_register(notifier);
 	if (ret) {
-		dev_err(dev, "failed to register v4l2 async notifier: %d\n",
-			ret);
+		dev_err(dev, "failed to register v4l2 async notifier: %d\n", ret);
 		goto error_v4l2_async_notifier;
 	}
 
-	dev_err(dev, "Bridge setup finished\n");
+	dev_err(dev, "CS Bridge setup finished\n");
 	
 	return 0;
 
