@@ -263,7 +263,7 @@
 	status = "okay";
 };
 
-&csi: camera@1cb0000 {
+&csi{
 	status = "okay";
 	compatible = "allwinner,sun6i-a31-csi";
 	reg = <0x01cb0000 0x1000>;
