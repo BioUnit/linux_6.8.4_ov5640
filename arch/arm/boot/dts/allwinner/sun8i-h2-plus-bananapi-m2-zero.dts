@@ -263,27 +263,24 @@
 	status = "okay";
 };
 
+
 &csi{
 	status = "okay";
-	compatible = "allwinner,sun6i-a31-csi";
-	reg = <0x01cb0000 0x1000>;
 
 	port {
-		//#address-cells = <1>;
-		//#size-cells = <0>;
-
-		csi_ep: endpoint {
-			remote-endpoint = <&ov5640>;
+		csi_to_ov: endpoint {
+			//remote-endpoint = <&ov5640_to_parallel>;
 			bus-type = <MEDIA_BUS_TYPE_PARALLEL>;
 			bus-width = <8>;
 			data-shift = <2>;
-			hsync-active = <1>; 
-			vsync-active = <0>; 
+			//hsync-active = <1>; 
+			//vsync-active = <0>; 
 			//data-active = <1>;  
-			pclk-sample = <1>;  
+			//pclk-sample = <1>;  
 		};
 	};
 };
+
 
 &i2c2 {
 	status = "okay";
@@ -303,7 +300,6 @@
 		DOVDD-supply = <&reg_cam_dovdd>;
 		DVDD-supply = <&reg_cam_dvdd>;
 
-		/*
 		port {
 			#address-cells = <1>;
 			#size-cells = <0>;
@@ -311,12 +307,11 @@
 				bus-type = <MEDIA_BUS_TYPE_PARALLEL>;
 				bus-width = <8>;
 				data-shift = <2>;
-				hsync-active = <1>;
-				vsync-active = <0>;
+				//hsync-active = <1>;
+				//vsync-active = <0>;
 				//data-active = <1>;
-				pclk-sample = <1>;
+				//pclk-sample = <1>;
 			};
 		};
-		*/
 	};
 };
