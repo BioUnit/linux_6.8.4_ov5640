@@ -97,6 +97,8 @@ match_fwnode_one(struct v4l2_async_notifier *notifier,
 	struct fwnode_handle *asd_dev_fwnode;
 	bool ret;
 
+	dev_err(sd->dev, "Starting match_fwnode_one...\n");
+	
 	dev_dbg(notifier_dev(notifier),
 		"v4l2-async: fwnode match: need %pfw, trying %pfw\n",
 		sd_fwnode, match->fwnode);
@@ -123,6 +125,8 @@ match_fwnode_one(struct v4l2_async_notifier *notifier,
 		"v4l2-async: device--endpoint match %sfound\n",
 		ret ? "" : "not ");
 
+	dev_err(sd->dev, "Match_fwnode_one finished\n");
+	
 	return ret;
 }
 
@@ -130,6 +134,8 @@ static bool match_fwnode(struct v4l2_async_notifier *notifier,
 			 struct v4l2_subdev *sd,
 			 struct v4l2_async_match_desc *match)
 {
+	dev_err(sd->dev,"Starting match_fwnode...\n");
+	
 	dev_dbg(notifier_dev(notifier),
 		"v4l2-async: matching for notifier %pfw, sd fwnode %pfw\n",
 		dev_fwnode(notifier_dev(notifier)), sd->fwnode);
@@ -168,6 +174,8 @@ static bool match_fwnode(struct v4l2_async_notifier *notifier,
 	dev_dbg(notifier_dev(notifier),
 		"v4l2-async: trying secondary fwnode match\n");
 
+	dev_err(sd->dev,"Match_fwnode finished\n");
+	
 	return match_fwnode_one(notifier, sd, sd->fwnode->secondary, match);
 }
 
@@ -190,17 +198,20 @@ v4l2_async_find_match(struct v4l2_async_notifier *notifier,
 		/* bus_type has been verified valid before */
 		switch (asc->match.type) {
 		case V4L2_ASYNC_MATCH_TYPE_I2C:
+			dev_err(sd->dev, "Match type is V4L2_ASYNC_MATCH_TYPE_I2C\n");
 			match = match_i2c;
 			break;
 		case V4L2_ASYNC_MATCH_TYPE_FWNODE:
+			dev_err(sd->dev, "Match type is V4L2_ASYNC_MATCH_TYPE_FWNODE\n");
 			match = match_fwnode;
 			break;
 		default:
 			/* Cannot happen, unless someone breaks us */
+			dev_err(sd->dev, "Match type is wrong: %d\n", asc->match.type);
 			WARN_ON(true);
 			return NULL;
 		}
-		dev_err(sd->dev, "Match type is %d\n", asc->match.type);
+		
 		/* match cannot be NULL here */
 		if (match(notifier, sd, &asc->match))
 			dev_err(sd->dev, "MATCH FOUND\n");
