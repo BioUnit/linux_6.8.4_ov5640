@@ -841,9 +841,7 @@ int sun6i_csi_bridge_setup(struct sun6i_csi_device *csi_dev)
 		v4l2_async_nf_init(notifier, v4l2_dev);
 	notifier->ops = &sun6i_csi_bridge_notifier_ops;
 
-	sun6i_csi_bridge_source_setup(csi_dev, &bridge->source_parallel,
-				      SUN6I_CSI_PORT_PARALLEL,
-				      parallel_mbus_types);
+	sun6i_csi_bridge_source_setup(csi_dev, &bridge->source_parallel, SUN6I_CSI_PORT_PARALLEL, parallel_mbus_types);
 	sun6i_csi_bridge_source_setup(csi_dev, &bridge->source_mipi_csi2, SUN6I_CSI_PORT_MIPI_CSI2, NULL);
 
 	ret = v4l2_async_nf_register(notifier);
@@ -852,7 +850,7 @@ int sun6i_csi_bridge_setup(struct sun6i_csi_device *csi_dev)
 		goto error_v4l2_async_notifier;
 	}
 
-	dev_err(dev, "CS Bridge setup finished\n");
+	dev_err(dev, "CSI Bridge setup finished\n");
 	
 	return 0;
 
