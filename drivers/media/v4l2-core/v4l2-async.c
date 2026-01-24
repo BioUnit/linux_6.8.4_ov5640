@@ -557,15 +557,15 @@ v4l2_async_nf_has_async_match(struct v4l2_async_notifier *notifier,
 		dev_err(notifier_dev(notifier), "Amount of notifiers: %d\n", ARRAY_SIZE(heads));
 		
 		list_for_each_entry(asc, heads[i], asc_entry) {
-			pr_info("match: type=%d\n", m->type);
-			pr_info("dev=%s\n", dev_name(m->dev));
-			pr_info("fwnode=%pfw\n", m->fwnode);
+			pr_info("match: type=%d\n", match->type);
+			pr_info("dev=%s\n", dev_name(match->dev));
+			pr_info("fwnode=%pfw\n", match->fwnode);
 			if (&asc->match == match){
 				dev_err(notifier_dev(notifier), "existing notifier == match\n");
 				continue;
 			}
 			if (v4l2_async_match_equal(&asc->match, match))
-				dev_err(notifier_dev(notifier), "notifiers are equal\n");
+				dev_err(notifier_dev(notifier), "Error, notifiers are equal\n");
 				return true;
 		}
 	}
