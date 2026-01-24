@@ -267,24 +267,6 @@
 
 &csi{
 	status = "okay";
-
-	ports{
-		#address-cells = <1>;
-		#size-cells = <0>;
-		port@0 {
-			reg = <0>;
-			csi_to_ov: endpoint {
-				//remote-endpoint = <&ov5640_to_parallel>;
-				bus-type = <MEDIA_BUS_TYPE_PARALLEL>;
-				bus-width = <8>;
-				data-shift = <2>;
-				hsync-active = <1>; 
-				vsync-active = <0>; 
-				//data-active = <1>;  
-				pclk-sample = <1>;  
-			};
-		};
-	};
 };
 
 
@@ -312,7 +294,7 @@
 			#address-cells = <1>;
 			#size-cells = <0>;
 			ov5640_to_parallel: endpoint {
-				remote-endpoint = <&csi_to_ov>;
+				remote-endpoint = <&csi>;
 				bus-type = <MEDIA_BUS_TYPE_PARALLEL>;
 				bus-width = <8>;
 				data-shift = <2>;
