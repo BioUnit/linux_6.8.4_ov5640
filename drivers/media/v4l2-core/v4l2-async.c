@@ -554,15 +554,7 @@ v4l2_async_nf_has_async_match(struct v4l2_async_notifier *notifier,
 	for (i = 0; i < ARRAY_SIZE(heads); i++) {
 		struct v4l2_async_connection *asc;
 
-		dev_err(notifier_dev(notifier), "Amount of notifiers: %d\n", ARRAY_SIZE(heads));
-
-		if(i<2){
-			list_for_each_entry(asc, heads[i+1], asc_entry){
-				pr_info("head+1: type=%d\n", asc->match.type);
-				pr_info("head+1: fwnode=%pfw\n", asc->match.fwnode);
-			}
-		}
-
+		dev_err(notifier_dev(notifier), "Amount of notifiers: %d, i=%d\n", ARRAY_SIZE(heads), i);
 		
 		list_for_each_entry(asc, heads[i], asc_entry) {
 			pr_info("match: type=%d\n", match->type);
