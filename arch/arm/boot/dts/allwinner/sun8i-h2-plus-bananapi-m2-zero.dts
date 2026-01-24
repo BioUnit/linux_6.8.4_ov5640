@@ -266,8 +266,10 @@
 
 &csi{
 	status = "okay";
-
-	port {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	port@0 {
+		reg = <0>;
 		csi_to_ov: endpoint {
 			remote-endpoint = <&ov5640_to_parallel>;
 			bus-type = <MEDIA_BUS_TYPE_PARALLEL>;
@@ -284,6 +286,8 @@
 
 &i2c2 {
 	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
 
 	ov5640: camera@3c {
 		compatible = "ovti,ov5640";
