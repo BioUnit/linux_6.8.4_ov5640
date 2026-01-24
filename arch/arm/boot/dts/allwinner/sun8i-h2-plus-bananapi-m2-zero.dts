@@ -266,19 +266,22 @@
 
 &csi{
 	status = "okay";
-	#address-cells = <1>;
-	#size-cells = <0>;
-	port@0 {
-		reg = <0>;
-		csi_to_ov: endpoint {
-			remote-endpoint = <&ov5640_to_parallel>;
-			bus-type = <MEDIA_BUS_TYPE_PARALLEL>;
-			bus-width = <8>;
-			data-shift = <2>;
-			//hsync-active = <1>; 
-			//vsync-active = <0>; 
-			//data-active = <1>;  
-			//pclk-sample = <1>;  
+
+	ports{
+		#address-cells = <1>;
+		#size-cells = <0>;
+		port@0 {
+			reg = <0>;
+			csi_to_ov: endpoint {
+				remote-endpoint = <&ov5640_to_parallel>;
+				//bus-type = <MEDIA_BUS_TYPE_PARALLEL>;
+				//bus-width = <8>;
+				//data-shift = <2>;
+				//hsync-active = <1>; 
+				//vsync-active = <0>; 
+				//data-active = <1>;  
+				//pclk-sample = <1>;  
+			};
 		};
 	};
 };
@@ -286,8 +289,8 @@
 
 &i2c2 {
 	status = "okay";
-	#address-cells = <1>;
-	#size-cells = <0>;
+	//#address-cells = <1>;
+	//#size-cells = <0>;
 
 	ov5640: camera@3c {
 		compatible = "ovti,ov5640";
@@ -312,10 +315,10 @@
 				bus-type = <MEDIA_BUS_TYPE_PARALLEL>;
 				bus-width = <8>;
 				data-shift = <2>;
-				//hsync-active = <1>;
-				//vsync-active = <0>;
+				hsync-active = <1>;
+				vsync-active = <0>;
 				//data-active = <1>;
-				//pclk-sample = <1>;
+				pclk-sample = <1>;
 			};
 		};
 	};
