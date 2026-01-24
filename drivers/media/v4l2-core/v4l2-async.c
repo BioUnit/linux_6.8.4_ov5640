@@ -558,7 +558,6 @@ v4l2_async_nf_has_async_match(struct v4l2_async_notifier *notifier,
 		
 		list_for_each_entry(asc, heads[i], asc_entry) {
 			pr_info("match: type=%d\n", match->type);
-			pr_info("dev=%s\n", dev_name(match->dev));
 			pr_info("fwnode=%pfw\n", match->fwnode);
 			if (&asc->match == match){
 				dev_err(notifier_dev(notifier), "existing notifier == match\n");
