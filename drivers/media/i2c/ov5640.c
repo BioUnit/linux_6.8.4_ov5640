@@ -3819,9 +3819,7 @@ static int ov5640_get_regulators(struct ov5640_dev *sensor)
 	for (i = 0; i < OV5640_NUM_SUPPLIES; i++)
 		sensor->supplies[i].supply = ov5640_supply_name[i];
 
-	return devm_regulator_bulk_get(&sensor->i2c_client->dev,
-				       OV5640_NUM_SUPPLIES,
-				       sensor->supplies);
+	return devm_regulator_bulk_get(&sensor->i2c_client->dev, OV5640_NUM_SUPPLIES, sensor->supplies);
 }
 
 static int ov5640_check_chip_id(struct ov5640_dev *sensor)
@@ -3830,18 +3828,19 @@ static int ov5640_check_chip_id(struct ov5640_dev *sensor)
 	int ret = 0;
 	u16 chip_id;
 
+	pr_info("ov5640.c - check_chip_id - Start\n");
+	
 	ret = ov5640_read_reg16(sensor, OV5640_REG_CHIP_ID, &chip_id);
 	if (ret) {
-		dev_err(&client->dev, "%s: failed to read chip identifier\n",
-			__func__);
+		dev_err(&client->dev, "%s: failed to read chip identifier\n", __func__);
 		return ret;
 	}
 
 	if (chip_id != 0x5640) {
-		dev_err(&client->dev, "%s: wrong chip identifier, expected 0x5640, got 0x%x\n",
-			__func__, chip_id);
+		dev_err(&client->dev, "%s: wrong chip identifier, expected 0x5640, got 0x%x\n", __func__, chip_id);
 		return -ENXIO;
 	}
+	pr_info("ov5640.c - check_chip_id - Finished\n");
 
 	return 0;
 }
@@ -3853,6 +3852,8 @@ static int ov5640_probe(struct i2c_client *client)
 	struct ov5640_dev *sensor;
 	int ret;
 
+	pr_info("ov5640.c - probe - Start\n");
+	
 	sensor = devm_kzalloc(dev, sizeof(*sensor), GFP_KERNEL);
 	if (!sensor)
 		return -ENOMEM;
