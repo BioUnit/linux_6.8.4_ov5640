@@ -82,7 +82,7 @@ void media_entity_enum_cleanup(struct media_entity_enum *ent_enum)
 EXPORT_SYMBOL_GPL(media_entity_enum_cleanup);
 
 /**
- *  dev_dbg_obj - Prints in debug mode a change on some object
+ *  dev_err_obj - Prints in debug mode a change on some object
  *
  * @event_name:	Name of the event to report. Could be __func__
  * @gobj:	Pointer to the object
@@ -90,12 +90,12 @@ EXPORT_SYMBOL_GPL(media_entity_enum_cleanup);
  * Enabled only if DEBUG or CONFIG_DYNAMIC_DEBUG. Otherwise, it
  * won't produce any code.
  */
-static void dev_dbg_obj(const char *event_name,  struct media_gobj *gobj)
+static void dev_err_obj(const char *event_name,  struct media_gobj *gobj)
 {
 #if defined(DEBUG) || defined (CONFIG_DYNAMIC_DEBUG)
 	switch (media_type(gobj)) {
 	case MEDIA_GRAPH_ENTITY:
-		dev_dbg(gobj->mdev->dev,
+		dev_err(gobj->mdev->dev,
 			"%s id %u: entity '%s'\n",
 			event_name, media_id(gobj),
 			gobj_to_entity(gobj)->name);
@@ -104,7 +104,7 @@ static void dev_dbg_obj(const char *event_name,  struct media_gobj *gobj)
 	{
 		struct media_link *link = gobj_to_link(gobj);
 
-		dev_dbg(gobj->mdev->dev,
+		dev_err(gobj->mdev->dev,
 			"%s id %u: %s link id %u ==> id %u\n",
 			event_name, media_id(gobj), link_type_name(link),
 			media_id(link->gobj0),
@@ -115,7 +115,7 @@ static void dev_dbg_obj(const char *event_name,  struct media_gobj *gobj)
 	{
 		struct media_pad *pad = gobj_to_pad(gobj);
 
-		dev_dbg(gobj->mdev->dev,
+		dev_err(gobj->mdev->dev,
 			"%s id %u: %s%spad '%s':%d\n",
 			event_name, media_id(gobj),
 			pad->flags & MEDIA_PAD_FL_SINK   ? "sink " : "",
@@ -128,7 +128,7 @@ static void dev_dbg_obj(const char *event_name,  struct media_gobj *gobj)
 		struct media_interface *intf = gobj_to_intf(gobj);
 		struct media_intf_devnode *devnode = intf_to_devnode(intf);
 
-		dev_dbg(gobj->mdev->dev,
+		dev_err(gobj->mdev->dev,
 			"%s id %u: intf_devnode %s - major: %d, minor: %d\n",
 			event_name, media_id(gobj),
 			intf_type(intf),
@@ -167,7 +167,7 @@ void media_gobj_create(struct media_device *mdev,
 
 	mdev->topology_version++;
 
-	dev_dbg_obj(__func__, gobj);
+	dev_err_obj(__func__, gobj);
 }
 
 void media_gobj_destroy(struct media_gobj *gobj)
@@ -176,7 +176,7 @@ void media_gobj_destroy(struct media_gobj *gobj)
 	if (gobj->mdev == NULL)
 		return;
 
-	dev_dbg_obj(__func__, gobj);
+	dev_err_obj(__func__, gobj);
 
 	gobj->mdev->topology_version++;
 
@@ -199,6 +199,8 @@ int media_entity_pads_init(struct media_entity *entity, u16 num_pads,
 	unsigned int i = 0;
 	int ret = 0;
 
+	pr_info("mc-entity - pads_init - Start\n");
+	
 	if (num_pads >= MEDIA_ENTITY_MAX_PADS)
 		return -E2BIG;
 
@@ -212,15 +214,13 @@ int media_entity_pads_init(struct media_entity *entity, u16 num_pads,
 		iter->entity = entity;
 		iter->index = i++;
 
-		if (hweight32(iter->flags & (MEDIA_PAD_FL_SINK |
-					     MEDIA_PAD_FL_SOURCE)) != 1) {
+		if (hweight32(iter->flags & (MEDIA_PAD_FL_SINK | MEDIA_PAD_FL_SOURCE)) != 1) {
 			ret = -EINVAL;
 			break;
 		}
 
 		if (mdev)
-			media_gobj_create(mdev, MEDIA_GRAPH_PAD,
-					  &iter->graph_obj);
+			media_gobj_create(mdev, MEDIA_GRAPH_PAD, &iter->graph_obj);
 	}
 
 	if (ret && mdev) {
@@ -231,6 +231,8 @@ int media_entity_pads_init(struct media_entity *entity, u16 num_pads,
 	if (mdev)
 		mutex_unlock(&mdev->graph_mutex);
 
+	pr_info("mc-entity - pads_init - Finished\n");
+	
 	return ret;
 }
 EXPORT_SYMBOL_GPL(media_entity_pads_init);
@@ -292,6 +294,8 @@ media_entity_other(struct media_entity *entity, struct media_link *link)
 static void stack_push(struct media_graph *graph,
 		       struct media_entity *entity)
 {
+	pr_info("mc-entity - stack_push - Start\n");
+	
 	if (graph->top == MEDIA_ENTITY_ENUM_MAX_DEPTH - 1) {
 		WARN_ON(1);
 		return;
@@ -351,7 +355,7 @@ void media_graph_walk_start(struct media_graph *graph,
 	graph->top = 0;
 	graph->stack[graph->top].entity = NULL;
 	stack_push(graph, entity);
-	dev_dbg(entity->graph_obj.mdev->dev,
+	dev_err(entity->graph_obj.mdev->dev,
 		"begin graph walk at '%s'\n", entity->name);
 }
 EXPORT_SYMBOL_GPL(media_graph_walk_start);
@@ -362,10 +366,13 @@ static void media_graph_walk_iter(struct media_graph *graph)
 	struct media_link *link;
 	struct media_entity *next;
 
+	pr_info("mc_entity - graph_walk_iter - Start\n");
+	
 	link = list_entry(link_top(graph), typeof(*link), list);
 
 	/* If the link is not a data link, don't follow it */
 	if ((link->flags & MEDIA_LNK_FL_LINK_TYPE) != MEDIA_LNK_FL_DATA_LINK) {
+		pr_info("mc_entity - graph_walk_iter - Not a link\n");
 		link_top(graph) = link_top(graph)->next;
 		return;
 	}
@@ -373,7 +380,7 @@ static void media_graph_walk_iter(struct media_graph *graph)
 	/* The link is not enabled so we do not follow. */
 	if (!(link->flags & MEDIA_LNK_FL_ENABLED)) {
 		link_top(graph) = link_top(graph)->next;
-		dev_dbg(entity->graph_obj.mdev->dev,
+		dev_err(entity->graph_obj.mdev->dev,
 			"walk: skipping disabled link '%s':%u -> '%s':%u\n",
 			link->source->entity->name, link->source->index,
 			link->sink->entity->name, link->sink->index);
@@ -386,7 +393,7 @@ static void media_graph_walk_iter(struct media_graph *graph)
 	/* Has the entity already been visited? */
 	if (media_entity_enum_test_and_set(&graph->ent_enum, next)) {
 		link_top(graph) = link_top(graph)->next;
-		dev_dbg(entity->graph_obj.mdev->dev,
+		dev_err(entity->graph_obj.mdev->dev,
 			"walk: skipping entity '%s' (already seen)\n",
 			next->name);
 		return;
@@ -395,7 +402,7 @@ static void media_graph_walk_iter(struct media_graph *graph)
 	/* Push the new entity to stack and start over. */
 	link_top(graph) = link_top(graph)->next;
 	stack_push(graph, next);
-	dev_dbg(entity->graph_obj.mdev->dev, "walk: pushing '%s' on stack\n",
+	dev_err(entity->graph_obj.mdev->dev, "walk: pushing '%s' on stack\n",
 		next->name);
 	lockdep_assert_held(&entity->graph_obj.mdev->graph_mutex);
 }
@@ -416,7 +423,7 @@ struct media_entity *media_graph_walk_next(struct media_graph *graph)
 		media_graph_walk_iter(graph);
 
 	entity = stack_pop(graph);
-	dev_dbg(entity->graph_obj.mdev->dev,
+	dev_err(entity->graph_obj.mdev->dev,
 		"walk: returning entity '%s'\n", entity->name);
 
 	return entity;
@@ -526,7 +533,7 @@ static int media_pipeline_walk_push(struct media_pipeline_walk *walk,
 	entry->pad = pad;
 	entry->links = pad->entity->links.next;
 
-	dev_dbg(walk->mdev->dev,
+	dev_err(walk->mdev->dev,
 		"media pipeline: pushed entry %u: '%s':%u\n",
 		walk->stack.top, pad->entity->name, pad->index);
 
@@ -548,7 +555,7 @@ static bool media_pipeline_walk_pop(struct media_pipeline_walk *walk)
 	entry = media_pipeline_walk_top(walk);
 
 	if (entry->links->next == &entry->pad->entity->links) {
-		dev_dbg(walk->mdev->dev,
+		dev_err(walk->mdev->dev,
 			"media pipeline: entry %u has no more links, popping\n",
 			walk->stack.top);
 
@@ -558,7 +565,7 @@ static bool media_pipeline_walk_pop(struct media_pipeline_walk *walk)
 
 	entry->links = entry->links->next;
 
-	dev_dbg(walk->mdev->dev,
+	dev_err(walk->mdev->dev,
 		"media pipeline: moved entry %u to next link\n",
 		walk->stack.top);
 
@@ -580,7 +587,7 @@ static int media_pipeline_add_pad(struct media_pipeline *pipe,
 
 	list_for_each_entry(ppad, &pipe->pads, list) {
 		if (ppad->pad == pad) {
-			dev_dbg(pad->graph_obj.mdev->dev,
+			dev_err(pad->graph_obj.mdev->dev,
 				"media pipeline: already contains pad '%s':%u\n",
 				pad->entity->name, pad->index);
 			return 0;
@@ -596,7 +603,7 @@ static int media_pipeline_add_pad(struct media_pipeline *pipe,
 
 	list_add_tail(&ppad->list, &pipe->pads);
 
-	dev_dbg(pad->graph_obj.mdev->dev,
+	dev_err(pad->graph_obj.mdev->dev,
 		"media pipeline: added pad '%s':%u\n",
 		pad->entity->name, pad->index);
 
@@ -620,12 +627,12 @@ static int media_pipeline_explore_next_link(struct media_pipeline *pipe,
 	last_link = media_pipeline_walk_pop(walk);
 
 	if ((link->flags & MEDIA_LNK_FL_LINK_TYPE) != MEDIA_LNK_FL_DATA_LINK) {
-		dev_dbg(walk->mdev->dev,
+		dev_err(walk->mdev->dev,
 			"media pipeline: skipping link (not data-link)\n");
 		return 0;
 	}
 
-	dev_dbg(walk->mdev->dev,
+	dev_err(walk->mdev->dev,
 		"media pipeline: exploring link '%s':%u -> '%s':%u\n",
 		link->source->entity->name, link->source->index,
 		link->sink->entity->name, link->sink->index);
@@ -646,7 +653,7 @@ static int media_pipeline_explore_next_link(struct media_pipeline *pipe,
 	if (origin != local &&
 	    !media_entity_has_pad_interdep(origin->entity, origin->index,
 					   local->index)) {
-		dev_dbg(walk->mdev->dev,
+		dev_err(walk->mdev->dev,
 			"media pipeline: skipping link (no route)\n");
 		goto done;
 	}
@@ -661,8 +668,7 @@ static int media_pipeline_explore_next_link(struct media_pipeline *pipe,
 
 	/* Similarly, add the remote pad, but only if the link is enabled. */
 	if (!(link->flags & MEDIA_LNK_FL_ENABLED)) {
-		dev_dbg(walk->mdev->dev,
-			"media pipeline: skipping link (disabled)\n");
+		dev_err(walk->mdev->dev, "media pipeline: skipping link (disabled)\n");
 		goto done;
 	}
 
@@ -681,7 +687,7 @@ done:
 	if (!last_link)
 		return 0;
 
-	dev_dbg(walk->mdev->dev,
+	dev_err(walk->mdev->dev,
 		"media pipeline: adding unconnected pads of '%s' reachable from pad %u\n",
 		origin->entity->name, origin->index);
 
@@ -748,11 +754,10 @@ static int media_pipeline_populate(struct media_pipeline *pipe,
 			goto done;
 	}
 
-	dev_dbg(pad->graph_obj.mdev->dev,
-		"media pipeline populated, found pads:\n");
+	dev_err(pad->graph_obj.mdev->dev, "media pipeline populated, found pads:\n");
 
 	list_for_each_entry(ppad, &pipe->pads, list)
-		dev_dbg(pad->graph_obj.mdev->dev, "- '%s':%u\n",
+		dev_err(pad->graph_obj.mdev->dev, "- '%s':%u\n",
 			ppad->pad->entity->name, ppad->pad->index);
 
 	WARN_ON(walk.stack.top != -1);
@@ -814,16 +819,14 @@ __must_check int __media_pipeline_start(struct media_pad *origin,
 		bool has_enabled_link = false;
 		struct media_link *link;
 
-		dev_dbg(mdev->dev, "Validating pad '%s':%u\n", pad->entity->name,
-			pad->index);
+		dev_err(mdev->dev, "Validating pad '%s':%u\n", pad->entity->name, pad->index);
 
 		/*
 		 * 1. Ensure that the pad doesn't already belong to a different
 		 * pipeline.
 		 */
 		if (pad->pipe) {
-			dev_dbg(mdev->dev, "Failed to start pipeline: pad '%s':%u busy\n",
-				pad->entity->name, pad->index);
+			dev_err(mdev->dev, "Failed to start pipeline: pad '%s':%u busy\n", pad->entity->name, pad->index);
 			ret = -EBUSY;
 			goto error;
 		}
@@ -857,7 +860,7 @@ __must_check int __media_pipeline_start(struct media_pad *origin,
 
 			ret = entity->ops->link_validate(link);
 			if (ret) {
-				dev_dbg(mdev->dev,
+				dev_err(mdev->dev,
 					"Link '%s':%u -> '%s':%u failed validation: %d\n",
 					link->source->entity->name,
 					link->source->index,
@@ -866,7 +869,7 @@ __must_check int __media_pipeline_start(struct media_pad *origin,
 				goto error;
 			}
 
-			dev_dbg(mdev->dev,
+			dev_err(mdev->dev,
 				"Link '%s':%u -> '%s':%u is valid\n",
 				link->source->entity->name,
 				link->source->index,
@@ -880,9 +883,7 @@ __must_check int __media_pipeline_start(struct media_pad *origin,
 		 */
 		if ((pad->flags & MEDIA_PAD_FL_MUST_CONNECT) &&
 		    !has_enabled_link) {
-			dev_dbg(mdev->dev,
-				"Pad '%s':%u must be connected by an enabled link\n",
-				pad->entity->name, pad->index);
+			dev_err(mdev->dev, "Pad '%s':%u must be connected by an enabled link\n", pad->entity->name, pad->index);
 			ret = -ENOLINK;
 			goto error;
 		}
@@ -914,8 +915,7 @@ error:
 }
 EXPORT_SYMBOL_GPL(__media_pipeline_start);
 
-__must_check int media_pipeline_start(struct media_pad *origin,
-				      struct media_pipeline *pipe)
+__must_check int media_pipeline_start(struct media_pad *origin, struct media_pipeline *pipe)
 {
 	struct media_device *mdev = origin->graph_obj.mdev;
 	int ret;
@@ -1108,8 +1108,7 @@ static void __media_entity_remove_link(struct media_entity *entity,
 	kfree(link);
 }
 
-int media_get_pad_index(struct media_entity *entity, u32 pad_type,
-			enum media_pad_signal_type sig_type)
+int media_get_pad_index(struct media_entity *entity, u32 pad_type, enum media_pad_signal_type sig_type)
 {
 	unsigned int i;
 
@@ -1294,11 +1293,9 @@ static int __media_entity_setup_link_notify(struct media_link *link, u32 flags)
 	if (ret < 0 && ret != -ENOIOCTLCMD)
 		return ret;
 
-	ret = media_entity_call(link->sink->entity, link_setup,
-				link->sink, link->source, flags);
+	ret = media_entity_call(link->sink->entity, link_setup, link->sink, link->source, flags);
 	if (ret < 0 && ret != -ENOIOCTLCMD) {
-		media_entity_call(link->source->entity, link_setup,
-				  link->source, link->sink, link->flags);
+		media_entity_call(link->source->entity, link_setup, link->source, link->sink, link->flags);
 		return ret;
 	}
 
