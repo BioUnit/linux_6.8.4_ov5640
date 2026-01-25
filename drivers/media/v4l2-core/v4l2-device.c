@@ -16,9 +16,13 @@
 
 int v4l2_device_register(struct device *dev, struct v4l2_device *v4l2_dev)
 {
-	if (v4l2_dev == NULL)
+	pr_info("v4l2-device.c - device_register - Start\n");
+	
+	if (v4l2_dev == NULL){
+		pr_info("v4l2-device.c - device_register - No v4l2 device found\n");	
 		return -EINVAL;
-
+	}
+	
 	INIT_LIST_HEAD(&v4l2_dev->subdevs);
 	spin_lock_init(&v4l2_dev->lock);
 	v4l2_prio_init(&v4l2_dev->prio);
@@ -27,8 +31,10 @@ int v4l2_device_register(struct device *dev, struct v4l2_device *v4l2_dev)
 	v4l2_dev->dev = dev;
 	if (dev == NULL) {
 		/* If dev == NULL, then name must be filled in by the caller */
-		if (WARN_ON(!v4l2_dev->name[0]))
+		if (WARN_ON(!v4l2_dev->name[0])){
+			pr_info("v4l2-device.c - device_register - No device found\n");
 			return -EINVAL;
+		}
 		return 0;
 	}
 
@@ -38,6 +44,9 @@ int v4l2_device_register(struct device *dev, struct v4l2_device *v4l2_dev)
 			dev->driver->name, dev_name(dev));
 	if (!dev_get_drvdata(dev))
 		dev_set_drvdata(dev, v4l2_dev);
+
+	pr_info("v4l2-device.c - device_register - Finished\n");
+	
 	return 0;
 }
 EXPORT_SYMBOL_GPL(v4l2_device_register);
