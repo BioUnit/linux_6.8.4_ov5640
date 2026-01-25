@@ -238,9 +238,10 @@ static int sun6i_csi_resources_setup(struct sun6i_csi_device *csi_dev,
 	int irq;
 
 	variant = of_device_get_match_data(dev);
-	if (!variant)
+	if (!variant){
 		pr_info("sun6i_csi.c - resources_setup() - invalid\n");
 		return -EINVAL;
+	}
 
 	/* Registers */
 
@@ -248,8 +249,7 @@ static int sun6i_csi_resources_setup(struct sun6i_csi_device *csi_dev,
 	if (IS_ERR(io_base))
 		return PTR_ERR(io_base);
 
-	csi_dev->regmap = devm_regmap_init_mmio_clk(dev, "bus", io_base,
-						    &sun6i_csi_regmap_config);
+	csi_dev->regmap = devm_regmap_init_mmio_clk(dev, "bus", io_base, &sun6i_csi_regmap_config);
 	if (IS_ERR(csi_dev->regmap)) {
 		dev_err(dev, "failed to init register map\n");
 		return PTR_ERR(csi_dev->regmap);
@@ -269,8 +269,7 @@ static int sun6i_csi_resources_setup(struct sun6i_csi_device *csi_dev,
 		return PTR_ERR(csi_dev->clock_ram);
 	}
 
-	ret = clk_set_rate_exclusive(csi_dev->clock_mod,
-				     variant->clock_mod_rate);
+	ret = clk_set_rate_exclusive(csi_dev->clock_mod, variant->clock_mod_rate);
 	if (ret) {
 		dev_err(dev, "failed to set mod clock rate\n");
 		return ret;
@@ -289,12 +288,12 @@ static int sun6i_csi_resources_setup(struct sun6i_csi_device *csi_dev,
 
 	irq = platform_get_irq(platform_dev, 0);
 	if (irq < 0) {
+		dev_err(dev, "IRQ err/ clock rate\n");
 		ret = -ENXIO;
 		goto error_clock_rate_exclusive;
 	}
 
-	ret = devm_request_irq(dev, irq, sun6i_csi_interrupt, IRQF_SHARED,
-			       SUN6I_CSI_NAME, csi_dev);
+	ret = devm_request_irq(dev, irq, sun6i_csi_interrupt, IRQF_SHARED, SUN6I_CSI_NAME, csi_dev);
 	if (ret) {
 		dev_err(dev, "failed to request interrupt\n");
 		goto error_clock_rate_exclusive;
