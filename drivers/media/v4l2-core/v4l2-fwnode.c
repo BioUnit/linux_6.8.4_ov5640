@@ -601,6 +601,7 @@ EXPORT_SYMBOL_GPL(v4l2_fwnode_endpoint_alloc_parse);
 int v4l2_fwnode_parse_link(struct fwnode_handle *fwnode,
 			   struct v4l2_fwnode_link *link)
 {
+	pr_info("v4l2-fwnode.c - fwnode_parse_link - Start\n");
 	struct fwnode_endpoint fwep;
 
 	memset(link, 0, sizeof(*link));
@@ -610,10 +611,12 @@ int v4l2_fwnode_parse_link(struct fwnode_handle *fwnode,
 	link->local_port = fwep.port;
 	link->local_node = fwnode_graph_get_port_parent(fwnode);
 	if (!link->local_node)
+		pr_info("v4l2-fwnode.c - fwnode_parse_link - Error, no link\n");
 		return -ENOLINK;
 
 	fwnode = fwnode_graph_get_remote_endpoint(fwnode);
 	if (!fwnode)
+		pr_info("v4l2-fwnode.c - fwnode_parse_link - Error, no fwnode\n");
 		goto err_put_local_node;
 
 	fwnode_graph_parse_endpoint(fwnode, &fwep);
@@ -621,8 +624,10 @@ int v4l2_fwnode_parse_link(struct fwnode_handle *fwnode,
 	link->remote_port = fwep.port;
 	link->remote_node = fwnode_graph_get_port_parent(fwnode);
 	if (!link->remote_node)
+		pr_info("v4l2-fwnode.c - fwnode_parse_link - Error, no remote-endpoint\n");
 		goto err_put_remote_endpoint;
 
+	pr_info("v4l2-fwnode.c - fwnode_parse_link - Finished\n");
 	return 0;
 
 err_put_remote_endpoint:
@@ -724,8 +729,12 @@ int v4l2_fwnode_connector_parse(struct fwnode_handle *fwnode,
 	const char *label;
 	int err;
 
-	if (!fwnode)
+	pr_info("v4l2-fwnode.c - fwnode_connector_parse - Start\n");
+	
+	if (!fwnode){
+		pr_info("v4l2-fwnode.c - fwnode_connector_parse - Error, no fwnode\n");
 		return -EINVAL;
+	}
 
 	memset(connector, 0, sizeof(*connector));
 
@@ -761,6 +770,8 @@ int v4l2_fwnode_connector_parse(struct fwnode_handle *fwnode,
 		break;
 	}
 
+	pr_info("v4l2-fwnode.c - fwnode_connector_parse - Finished\n");
+	
 out:
 	fwnode_handle_put(connector_node);
 
@@ -775,21 +786,27 @@ int v4l2_fwnode_connector_add_link(struct fwnode_handle *fwnode,
 	struct v4l2_connector_link *link;
 	int err;
 
+	pr_info("v4l2-fwnode.c - add_link - Start\n");
+	
 	if (!fwnode || !connector || connector->type == V4L2_CONN_UNKNOWN)
+		pr_info("v4l2-fwnode.c - add_link - Error, no fwnode or connector, or unknown type\n");
 		return -EINVAL;
 
 	connector_ep = fwnode_graph_get_remote_endpoint(fwnode);
 	if (!connector_ep)
+		pr_info("v4l2-fwnode.c - add_link - Error, no endpoint\n");
 		return -ENOTCONN;
 
 	link = kzalloc(sizeof(*link), GFP_KERNEL);
 	if (!link) {
+		pr_info("v4l2-fwnode.c - add_link - Error, can't allocate mem\n");
 		err = -ENOMEM;
 		goto err;
 	}
 
 	err = v4l2_fwnode_parse_link(connector_ep, &link->fwnode_link);
 	if (err)
+		pr_info("v4l2-fwnode.c - add_link - Error, no link\n");
 		goto err;
 
 	fwnode_handle_put(connector_ep);
@@ -797,6 +814,8 @@ int v4l2_fwnode_connector_add_link(struct fwnode_handle *fwnode,
 	list_add(&link->head, &connector->links);
 	connector->nr_of_links++;
 
+	pr_info("v4l2-fwnode.c - add_link - Finished\n");
+	
 	return 0;
 
 err:
@@ -814,6 +833,8 @@ int v4l2_fwnode_device_parse(struct device *dev,
 	u32 val;
 	int ret;
 
+	pr_info("v4l2-fwnode.c - device_parse - Start\n");
+	
 	memset(props, 0, sizeof(*props));
 
 	props->orientation = V4L2_FWNODE_PROPERTY_UNSET;
@@ -825,26 +846,28 @@ int v4l2_fwnode_device_parse(struct device *dev,
 		case V4L2_FWNODE_ORIENTATION_EXTERNAL:
 			break;
 		default:
-			dev_warn(dev, "Unsupported device orientation: %u\n", val);
+			dev_err(dev, "Unsupported device orientation: %u\n", val);
 			return -EINVAL;
 		}
 
 		props->orientation = val;
-		dev_dbg(dev, "device orientation: %u\n", val);
+		dev_err(dev, "device orientation: %u\n", val);
 	}
 
 	props->rotation = V4L2_FWNODE_PROPERTY_UNSET;
 	ret = fwnode_property_read_u32(fwnode, "rotation", &val);
 	if (!ret) {
 		if (val >= 360) {
-			dev_warn(dev, "Unsupported device rotation: %u\n", val);
+			dev_err(dev, "Unsupported device rotation: %u\n", val);
 			return -EINVAL;
 		}
 
 		props->rotation = val;
-		dev_dbg(dev, "device rotation: %u\n", val);
+		dev_err(dev, "device rotation: %u\n", val);
 	}
 
+	pr_info("v4l2-fwnode.c - device_parse - Finished\n");
+	
 	return 0;
 }
 EXPORT_SYMBOL_GPL(v4l2_fwnode_device_parse);
@@ -868,6 +891,8 @@ static int v4l2_fwnode_reference_parse(struct device *dev,
 	unsigned int index;
 	int ret;
 
+	pr_info("v4l2-fwnode.c - reference_parse - Start\n");
+	
 	for (index = 0;
 	     !(ret = fwnode_property_get_reference_args(dev_fwnode(dev), prop,
 							NULL, 0, index, &args));
@@ -887,8 +912,10 @@ static int v4l2_fwnode_reference_parse(struct device *dev,
 	}
 
 	/* -ENOENT here means successful parsing */
-	if (ret != -ENOENT)
+	if (ret != -ENOENT){
+		pr_info("v4l2-fwnode.c - reference_parse - Finished\n");
 		return ret;
+	}
 
 	/* Return -ENOENT if no references were found */
 	return index ? 0 : -ENOENT;
@@ -1064,7 +1091,7 @@ v4l2_fwnode_reference_get_int_prop(struct fwnode_handle *fwnode,
 	u64 *args = fwnode_args.args;
 	struct fwnode_handle *child;
 	int ret;
-
+	pr_info("v4l2-fwnode.c - reference_get_int_prop - Start\n");
 	/*
 	 * Obtain remote fwnode as well as the integer arguments.
 	 *
@@ -1107,6 +1134,8 @@ v4l2_fwnode_reference_get_int_prop(struct fwnode_handle *fwnode,
 		fwnode = child;
 	}
 
+	pr_info("v4l2-fwnode.c - reference_get_int_prop - Finished\n");
+	
 	return fwnode;
 }
 
@@ -1151,6 +1180,8 @@ v4l2_fwnode_reference_parse_int_props(struct device *dev,
 	const char * const *props = p->props;
 	unsigned int nprops = p->nprops;
 
+	pr_info("v4l2-fwnode.c - reference_parse_int_props - Start\n");
+	
 	index = 0;
 	do {
 		fwnode = v4l2_fwnode_reference_get_int_prop(dev_fwnode(dev),
@@ -1192,6 +1223,8 @@ v4l2_fwnode_reference_parse_int_props(struct device *dev,
 		}
 	}
 
+	pr_info("v4l2-fwnode.c - reference_parse_int_props - Finished\n");
+	
 	return !fwnode || PTR_ERR(fwnode) == -ENOENT ? 0 : PTR_ERR(fwnode);
 }
 
@@ -1226,6 +1259,8 @@ v4l2_async_nf_parse_fwnode_sensor(struct device *dev,
 	};
 	unsigned int i;
 
+	pr_info("v4l2-fwnode.c - parse_fwnode_sensor - Start\n");
+	
 	for (i = 0; i < ARRAY_SIZE(props); i++) {
 		int ret;
 
@@ -1243,6 +1278,8 @@ v4l2_async_nf_parse_fwnode_sensor(struct device *dev,
 		}
 	}
 
+	pr_info("v4l2-fwnode.c - parse_fwnode_sensor - Finished\n");
+	
 	return 0;
 }
 
@@ -1251,6 +1288,8 @@ int v4l2_async_register_subdev_sensor(struct v4l2_subdev *sd)
 	struct v4l2_async_notifier *notifier;
 	int ret;
 
+	pr_info("v4l2-fwnode.c - register_subdev_sensor - Start\n");
+	
 	if (WARN_ON(!sd->dev))
 		return -ENODEV;
 
@@ -1278,6 +1317,8 @@ int v4l2_async_register_subdev_sensor(struct v4l2_subdev *sd)
 
 	sd->subdev_notifier = notifier;
 
+	pr_info("v4l2-fwnode.c - register_subdev_sensor - Finished\n");
+	
 	return 0;
 
 out_unregister:
