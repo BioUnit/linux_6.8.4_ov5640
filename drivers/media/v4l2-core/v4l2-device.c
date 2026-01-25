@@ -35,6 +35,7 @@ int v4l2_device_register(struct device *dev, struct v4l2_device *v4l2_dev)
 			pr_info("v4l2-device.c - device_register - No device found\n");
 			return -EINVAL;
 		}
+		pr_info("v4l2-device.c - device_register - Finished_1\n");
 		return 0;
 	}
 
@@ -45,7 +46,7 @@ int v4l2_device_register(struct device *dev, struct v4l2_device *v4l2_dev)
 	if (!dev_get_drvdata(dev))
 		dev_set_drvdata(dev, v4l2_dev);
 
-	pr_info("v4l2-device.c - device_register - Finished\n");
+	pr_info("v4l2-device.c - device_register - Finished_2\n");
 	
 	return 0;
 }
