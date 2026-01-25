@@ -200,9 +200,10 @@ v4l2_async_find_match(struct v4l2_async_notifier *notifier,
 		}
 		
 		/* match cannot be NULL here */
-		if (match(notifier, sd, &asc->match))
+		if (match(notifier, sd, &asc->match)){
 			dev_err(sd->dev, "MATCH FOUND\n");
 			return asc;
+		}
 	}
 	dev_err(sd->dev, "ERROR, NO MATCH WAS FOUND\n");
 	return NULL;
@@ -238,10 +239,12 @@ v4l2_async_find_subdev_notifier(struct v4l2_subdev *sd)
 	struct v4l2_async_notifier *n;
 
 	dev_err(sd->dev, "Checking for subdev notifier...\n");
-	list_for_each_entry(n, &notifier_list, notifier_entry)
-		if (n->sd == sd)
+	list_for_each_entry(n, &notifier_list, notifier_entry){
+		if (n->sd == sd){
 			dev_err(sd->dev, "Subdev notifier found\n");
 			return n;
+		}
+	}
 	dev_err(sd->dev, "Error, subdev notifier not found\n");
 	return NULL;
 }
@@ -310,9 +313,10 @@ v4l2_async_nf_try_complete(struct v4l2_async_notifier *notifier)
 	}
 
 	/* Is everything ready? */
-	if (!v4l2_async_nf_can_complete(notifier))
+	if (!v4l2_async_nf_can_complete(notifier)){
 		pr_info("v4l2-async.c - try_complete - Is everything ready?\n");
 		return 0;
+	}
 
 	dev_err(notifier_dev(__notifier), "v4l2-async: completed\n");
 
@@ -429,10 +433,10 @@ v4l2_async_nf_try_all_subdevs(struct v4l2_async_notifier *notifier)
 	struct v4l2_device *v4l2_dev = v4l2_async_nf_find_v4l2_dev(notifier);
 	struct v4l2_subdev *sd;
 
-	if (!v4l2_dev)
+	if (!v4l2_dev){
 		pr_info("v4l2-async.c - try_all_subdevs - No devices found OK\n");
 		return 0;
-
+	}
 	dev_err(notifier_dev(notifier), "v4l2-async: trying all sub-devices\n");
 
 again:
@@ -482,8 +486,7 @@ v4l2_async_nf_unbind_all_subdevs(struct v4l2_async_notifier *notifier)
 {
 	struct v4l2_async_connection *asc, *asc_tmp;
 
-	list_for_each_entry_safe(asc, asc_tmp, &notifier->done_list,
-				 asc_entry) {
+	list_for_each_entry_safe(asc, asc_tmp, &notifier->done_list, sc_entry) {
 		struct v4l2_async_notifier *subdev_notifier =
 			v4l2_async_find_subdev_notifier(asc->sd);
 
@@ -547,18 +550,20 @@ v4l2_async_nf_has_async_match(struct v4l2_async_notifier *notifier,
 				dev_err(notifier_dev(notifier), "existing notifier == match\n");
 				continue;
 			}
-			if (v4l2_async_match_equal(&asc->match, match))
+			if (v4l2_async_match_equal(&asc->match, match)){
 				dev_err(notifier_dev(notifier), "Error, notifiers are equal\n");
 				return true;
+			}
 		}
 	}
 
 	/* Check that an asc does not exist in other notifiers. */
-	list_for_each_entry(notifier, &notifier_list, notifier_entry)
-		if (v4l2_async_nf_has_async_match_entry(notifier, match))
+	list_for_each_entry(notifier, &notifier_list, notifier_entry){
+		if (v4l2_async_nf_has_async_match_entry(notifier, match)){
 			dev_err(notifier_dev(notifier), "hf_has_async_match finished\n");
 			return true;
-
+		}
+	}
 	dev_err(notifier_dev(notifier), "Error, no async match found\n");
 	
 	return false;
@@ -729,9 +734,10 @@ __v4l2_async_nf_add_fwnode(struct v4l2_async_notifier *notifier,
 	struct v4l2_async_connection *asc;
 
 	asc = kzalloc(asc_struct_size, GFP_KERNEL);
-	if (!asc)
+	if (!asc){
 		pr_info("v4l2-async.c - add_fwnode - Invalid_1\n");
 		return ERR_PTR(-ENOMEM);
+	}
 
 	asc->notifier = notifier;
 	asc->match.type = V4L2_ASYNC_MATCH_TYPE_FWNODE;
@@ -752,9 +758,10 @@ __v4l2_async_nf_add_fwnode_remote(struct v4l2_async_notifier *notif,
 	struct fwnode_handle *remote;
 
 	remote = fwnode_graph_get_remote_endpoint(endpoint);
-	if (!remote)
+	if (!remote){
 		pr_info("v4l2-async.c - add_fwnode_remote - Invalid_1\n");
 		return ERR_PTR(-ENOTCONN);
+	}
 
 	asc = __v4l2_async_nf_add_fwnode(notif, remote, asc_struct_size);
 	/*
@@ -773,9 +780,10 @@ __v4l2_async_nf_add_i2c(struct v4l2_async_notifier *notifier, int adapter_id,
 	struct v4l2_async_connection *asc;
 
 	asc = kzalloc(asc_struct_size, GFP_KERNEL);
-	if (!asc)
+	if (!asc){
 		pr_info("v4l2-async.c - add_i2c - Invalid_1\n");
 		return ERR_PTR(-ENOMEM);
+	}
 
 	asc->notifier = notifier;
 	asc->match.type = V4L2_ASYNC_MATCH_TYPE_I2C;
@@ -796,9 +804,10 @@ int v4l2_async_subdev_endpoint_add(struct v4l2_subdev *sd,
 	dev_err(sd->dev, "Adding subdev endpoint...\n");
 	
 	ase = kmalloc(sizeof(*ase), GFP_KERNEL);
-	if (!ase)
+	if (!ase){
 		pr_info("v4l2-async.c - subdev_endpoint_add - Invalid_1\n");
 		return -ENOMEM;
+	}
 
 	ase->endpoint = fwnode;
 	list_add(&ase->async_subdev_endpoint_entry,
