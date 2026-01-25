@@ -357,9 +357,10 @@ static void sun6i_csi_bridge_configure_format(struct sun6i_csi_device *csi_dev)
 	sun6i_csi_bridge_format(csi_dev, &mbus_code, &field);
 
 	bridge_format = sun6i_csi_bridge_format_find(mbus_code);
-	if (WARN_ON(!bridge_format))
-		pr_info("cs_bridge.c - bridge_configure_format - Invalid_1\n");
+	if (WARN_ON(!bridge_format)){
+		pr_info("cs_bridge.c - bridge_configure_format - No bridge format found\n");
 		return;
+	}
 
 	input_format = bridge_format->input_format;
 	input_yuv_seq = bridge_format->input_yuv_seq;
@@ -368,9 +369,10 @@ static void sun6i_csi_bridge_configure_format(struct sun6i_csi_device *csi_dev)
 		sun6i_csi_capture_format(csi_dev, &pixelformat, NULL);
 
 		capture_format = sun6i_csi_capture_format_find(pixelformat);
-		if (WARN_ON(!capture_format))
-			pr_info("cs_bridge.c - bridge_configure_format - Invalid_2\n");
+		if (WARN_ON(!capture_format)){
+			pr_info("cs_bridge.c - bridge_configure_format - No capture format found\n");
 			return;
+		}
 
 		if (capture_format->input_format_raw)
 			input_format = SUN6I_CSI_INPUT_FMT_RAW;
@@ -632,23 +634,19 @@ static int sun6i_csi_bridge_link(struct sun6i_csi_device *csi_dev,
 	ret = media_entity_get_fwnode_pad(source_entity, remote_subdev->fwnode,
 					  MEDIA_PAD_FL_SOURCE);
 	if (ret < 0) {
-		dev_err(dev, "missing source pad in external entity %s\n",
-			source_entity->name);
+		dev_err(dev, "missing source pad in external entity %s\n", source_entity->name);
 		return -EINVAL;
 	}
 
 	source_pad_index = ret;
 
-	dev_err(dev, "creating %s:%u -> %s:%u link\n", source_entity->name,
-		source_pad_index, sink_entity->name, sink_pad_index);
+	dev_err(dev, "creating %s:%u -> %s:%u link\n", source_entity->name, source_pad_index, sink_entity->name, sink_pad_index);
 
 	ret = media_create_pad_link(source_entity, source_pad_index,
 				    sink_entity, sink_pad_index,
 				    enabled ? MEDIA_LNK_FL_ENABLED : 0);
 	if (ret < 0) {
-		dev_err(dev, "failed to create %s:%u -> %s:%u link\n",
-			source_entity->name, source_pad_index,
-			sink_entity->name, sink_pad_index);
+		dev_err(dev, "failed to create %s:%u -> %s:%u link\n", source_entity->name, source_pad_index, sink_entity->name, sink_pad_index);
 		return ret;
 	}
 	dev_err(dev, "Bridge link finished\n");
@@ -700,8 +698,7 @@ sun6i_csi_bridge_notifier_bound(struct v4l2_async_notifier *notifier,
 			return ret;
 	}
 	pr_info("cs_bridge.c - bridge_notifier_bound - Finished\n");
-	return sun6i_csi_bridge_link(csi_dev, SUN6I_CSI_BRIDGE_PAD_SINK,
-				     remote_subdev, enabled);
+	return sun6i_csi_bridge_link(csi_dev, SUN6I_CSI_BRIDGE_PAD_SINK, remote_subdev, enabled);
 }
 
 static int
@@ -745,9 +742,10 @@ static int sun6i_csi_bridge_source_setup(struct sun6i_csi_device *csi_dev,
 	dev_err(dev, "CSI Bridge Source setup start...\n");
 	
 	handle = fwnode_graph_get_endpoint_by_id(dev_fwnode(dev), port, 0, 0);
-	if (!handle)
-		pr_info("cs_bridge.c - bridge_source_setup - Invalid_1\n");
+	if (!handle){
+		pr_info("cs_bridge.c - bridge_source_setup - No endpoint handle found\n");
 		return -ENODEV;
+	}
 
 	ret = v4l2_fwnode_endpoint_parse(handle, endpoint);
 	if (ret)
@@ -857,11 +855,11 @@ int sun6i_csi_bridge_setup(struct sun6i_csi_device *csi_dev)
 	sun6i_csi_bridge_source_setup(csi_dev, &bridge->source_parallel, SUN6I_CSI_PORT_PARALLEL, parallel_mbus_types);
 	sun6i_csi_bridge_source_setup(csi_dev, &bridge->source_mipi_csi2, SUN6I_CSI_PORT_MIPI_CSI2, NULL);
 
-	//ret = v4l2_async_nf_register(notifier);
-	//if (ret) {
-	//	dev_err(dev, "failed to register v4l2 async notifier: %d\n", ret);
-	//	goto error_v4l2_async_notifier;
-	//}
+	ret = v4l2_async_nf_register(notifier);
+	if (ret) {
+		dev_err(dev, "failed to register v4l2 async notifier: %d\n", ret);
+		goto error_v4l2_async_notifier;
+	}
 
 	dev_err(dev, "CSI Bridge setup finished\n");
 	
