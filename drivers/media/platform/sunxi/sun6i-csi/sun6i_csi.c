@@ -44,6 +44,8 @@ static int sun6i_csi_isp_detect(struct sun6i_csi_device *csi_dev)
 	struct device *dev = csi_dev->dev;
 	struct fwnode_handle *handle;
 
+	pr_info("sun6i_csi.c - isp_detect - Start\n");
+	
 	/*
 	 * ISP is not available if not connected via fwnode graph.
 	 * This will also check that the remote parent node is available.
@@ -51,18 +53,21 @@ static int sun6i_csi_isp_detect(struct sun6i_csi_device *csi_dev)
 	handle = fwnode_graph_get_endpoint_by_id(dev_fwnode(dev),
 						 SUN6I_CSI_PORT_ISP, 0,
 						 FWNODE_GRAPH_ENDPOINT_NEXT);
-	if (!handle)
+	if (!handle){
+		pr_info("sun6i_csi.c - isp_detect - ISP is not used OK\n");
 		return 0;
+	}
 
 	fwnode_handle_put(handle);
 
 	if (!IS_ENABLED(CONFIG_VIDEO_SUN6I_ISP)) {
-		dev_err(dev, "ISP link is detected but not enabled in kernel config!");
+		dev_err(dev, "ISP link is detected but not enabled in kernel config! OK");
 		return 0;
 	}
 
 	csi_dev->isp_available = true;
 
+	pr_info("sun6i_csi.c - isp_detect - Finished\n");
 	return 0;
 }
 
@@ -83,9 +88,9 @@ static int sun6i_csi_v4l2_setup(struct sun6i_csi_device *csi_dev)
 	int ret;
 
 	/* Media Device */
-
-	strscpy(media_dev->model, SUN6I_CSI_DESCRIPTION,
-		sizeof(media_dev->model));
+	pr_info("sun6i_csi.c - v4l2_setup - Start\n");
+	
+	strscpy(media_dev->model, SUN6I_CSI_DESCRIPTION, sizeof(media_dev->model));
 	media_dev->hw_revision = 0;
 	media_dev->ops = &sun6i_csi_media_ops;
 	media_dev->dev = dev;
@@ -110,7 +115,8 @@ static int sun6i_csi_v4l2_setup(struct sun6i_csi_device *csi_dev)
 
 	csi_dev->v4l2_dev = v4l2_dev;
 	csi_dev->media_dev = media_dev;
-
+	
+	pr_info("sun6i_csi.c - v4l2_setup - Finished\n");
 	return 0;
 
 error_media:
@@ -237,6 +243,8 @@ static int sun6i_csi_resources_setup(struct sun6i_csi_device *csi_dev,
 	int ret;
 	int irq;
 
+	pr_info("sun6i_csi.c - resources_setup - Start\n");
+	
 	variant = of_device_get_match_data(dev);
 	if (!variant){
 		pr_info("sun6i_csi.c - resources_setup() - invalid\n");
@@ -303,6 +311,8 @@ static int sun6i_csi_resources_setup(struct sun6i_csi_device *csi_dev,
 
 	pm_runtime_enable(dev);
 
+	pr_info("sun6i_csi.c - resources_setup - Finished\n");
+	
 	return 0;
 
 error_clock_rate_exclusive:
