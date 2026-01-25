@@ -99,19 +99,15 @@ match_fwnode_one(struct v4l2_async_notifier *notifier,
 
 	dev_err(sd->dev, "Starting match_fwnode_one...\n");
 	
-	dev_err(notifier_dev(notifier),
-		"v4l2-async: fwnode match: need %pfw, trying %pfw\n",
-		sd_fwnode, match->fwnode);
+	dev_err(notifier_dev(notifier), "v4l2-async: fwnode match: need %pfw, trying %pfw\n", sd_fwnode, match->fwnode);
 
 	if (sd_fwnode == match->fwnode) {
-		dev_err(notifier_dev(notifier),
-			"v4l2-async: direct match found\n");
+		dev_err(notifier_dev(notifier), "v4l2-async: direct match found\n");
 		return true;
 	}
 
 	if (!fwnode_graph_is_endpoint(match->fwnode)) {
-		dev_err(notifier_dev(notifier),
-			"v4l2-async: direct match not found\n");
+		dev_err(notifier_dev(notifier), "v4l2-async: direct match not found\n");
 		return false;
 	}
 
@@ -121,9 +117,7 @@ match_fwnode_one(struct v4l2_async_notifier *notifier,
 
 	fwnode_handle_put(asd_dev_fwnode);
 
-	dev_err(notifier_dev(notifier),
-		"v4l2-async: device--endpoint match %sfound\n",
-		ret ? "" : "not ");
+	dev_err(notifier_dev(notifier), "v4l2-async: device--endpoint match %sfound\n", ret ? "" : "not ");
 
 	dev_err(sd->dev, "Match_fwnode_one finished\n");
 	
@@ -136,23 +130,17 @@ static bool match_fwnode(struct v4l2_async_notifier *notifier,
 {
 	dev_err(sd->dev,"Starting match_fwnode...\n");
 	
-	dev_err(notifier_dev(notifier),
-		"v4l2-async: matching for notifier %pfw, sd fwnode %pfw\n",
-		dev_fwnode(notifier_dev(notifier)), sd->fwnode);
+	dev_err(notifier_dev(notifier), "v4l2-async: matching for notifier %pfw, sd fwnode %pfw\n", dev_fwnode(notifier_dev(notifier)), sd->fwnode);
 
 	if (!list_empty(&sd->async_subdev_endpoint_list)) {
 		struct v4l2_async_subdev_endpoint *ase;
 
-		dev_err(sd->dev,
-			"v4l2-async: endpoint fwnode list available, looking for %pfw\n",
-			match->fwnode);
+		dev_err(sd->dev, "v4l2-async: endpoint fwnode list available, looking for %pfw\n", match->fwnode);
 
-		list_for_each_entry(ase, &sd->async_subdev_endpoint_list,
-				    async_subdev_endpoint_entry) {
+		list_for_each_entry(ase, &sd->async_subdev_endpoint_list, async_subdev_endpoint_entry) {
 			bool matched = ase->endpoint == match->fwnode;
 
-			dev_err(sd->dev,
-				"v4l2-async: endpoint-endpoint match %sfound with %pfw\n",
+			dev_err(sd->dev, "v4l2-async: endpoint-endpoint match %sfound with %pfw\n",
 				matched ? "" : "not ", ase->endpoint);
 
 			if (matched)
@@ -171,8 +159,7 @@ static bool match_fwnode(struct v4l2_async_notifier *notifier,
 	if (IS_ERR_OR_NULL(sd->fwnode->secondary))
 		return false;
 
-	dev_err(notifier_dev(notifier),
-		"v4l2-async: trying secondary fwnode match\n");
+	dev_err(notifier_dev(notifier), "v4l2-async: trying secondary fwnode match\n");
 
 	dev_err(sd->dev,"Match_fwnode finished\n");
 	
@@ -222,22 +209,25 @@ v4l2_async_find_match(struct v4l2_async_notifier *notifier,
 }
 
 /* Compare two async match descriptors for equivalence */
-static bool v4l2_async_match_equal(struct v4l2_async_match_desc *match1,
-				   struct v4l2_async_match_desc *match2)
+static bool v4l2_async_match_equal(struct v4l2_async_match_desc *match1, struct v4l2_async_match_desc *match2)
 {
-	if (match1->type != match2->type)
+	pr_info("v4l2-async.c - try_complete - Start\n");
+	if (match1->type != match2->type){
+		pr_info("v4l2-async.c - async_match_equal - Type is Unequal\n");
 		return false;
+	}
 
 	switch (match1->type) {
 	case V4L2_ASYNC_MATCH_TYPE_I2C:
-		return match1->i2c.adapter_id == match2->i2c.adapter_id &&
-			match1->i2c.address == match2->i2c.address;
+		return match1->i2c.adapter_id == match2->i2c.adapter_id && match1->i2c.address == match2->i2c.address;
 	case V4L2_ASYNC_MATCH_TYPE_FWNODE:
+		pr_info("v4l2-async.c - async_match_equal - fwnode is equal\n");
 		return match1->fwnode == match2->fwnode;
 	default:
 		break;
 	}
-
+	
+	pr_info("v4l2-async.c - async_match_equal - Unequal\n");
 	return false;
 }
 
@@ -260,7 +250,7 @@ v4l2_async_find_subdev_notifier(struct v4l2_subdev *sd)
 static struct v4l2_device *
 v4l2_async_nf_find_v4l2_dev(struct v4l2_async_notifier *notifier)
 {
-	dev_err(notifier_dev(notifier), "Checking for v4l2 device...\n");
+	dev_err(notifier_dev(notifier), "Checking for v4l2 device (notifier)...\n");
 	while (notifier->parent)
 		notifier = notifier->parent;
 	
@@ -282,8 +272,7 @@ v4l2_async_nf_can_complete(struct v4l2_async_notifier *notifier)
 		return false;
 
 	list_for_each_entry(asc, &notifier->done_list, asc_entry) {
-		struct v4l2_async_notifier *subdev_notifier =
-			v4l2_async_find_subdev_notifier(asc->sd);
+		struct v4l2_async_notifier *subdev_notifier = v4l2_async_find_subdev_notifier(asc->sd);
 
 		if (subdev_notifier &&!v4l2_async_nf_can_complete(subdev_notifier)){
 			dev_err(notifier_dev(notifier), "Error, complete task failed\n");
@@ -308,8 +297,7 @@ v4l2_async_nf_try_complete(struct v4l2_async_notifier *notifier)
 		return 0;
 
 	if (notifier->sd)
-		dev_err(notifier_dev(notifier),
-			"v4l2-async: trying to complete\n");
+		dev_err(notifier_dev(notifier), "v4l2-async: trying to complete\n");
 
 	/* Check the entire notifier tree; find the root notifier first. */
 	while (notifier->parent)
@@ -317,16 +305,16 @@ v4l2_async_nf_try_complete(struct v4l2_async_notifier *notifier)
 
 	/* This is root if it has v4l2_dev. */
 	if (!notifier->v4l2_dev) {
-		dev_err(notifier_dev(__notifier),
-			"v4l2-async: V4L2 device not available\n");
+		dev_err(notifier_dev(__notifier), "v4l2-async: V4L2 device not available\n");
 		return 0;
 	}
 
 	/* Is everything ready? */
 	if (!v4l2_async_nf_can_complete(notifier))
+		pr_info("v4l2-async.c - try_complete - Is everything ready?\n");
 		return 0;
 
-	dev_err(notifier_dev(__notifier), "v4l2-async: complete\n");
+	dev_err(notifier_dev(__notifier), "v4l2-async: completed\n");
 
 	return v4l2_async_nf_call_complete(notifier);
 }
@@ -345,9 +333,7 @@ static int v4l2_async_create_ancillary_links(struct v4l2_async_notifier *n,
 		return 0;
 
 	if (!n->sd) {
-		dev_warn(notifier_dev(n),
-			 "not a sub-device notifier, not creating an ancillary link for %s!\n",
-			 dev_name(sd->dev));
+		dev_err(notifier_dev(n), "not a sub-device notifier, not creating an ancillary link for %s!\n", dev_name(sd->dev));
 		return 0;
 	}
 
@@ -380,9 +366,7 @@ static int v4l2_async_match_notify(struct v4l2_async_notifier *notifier,
 	ret = v4l2_async_nf_call_bound(notifier, sd, asc);
 	if (ret < 0) {
 		if (asc->match.type == V4L2_ASYNC_MATCH_TYPE_FWNODE)
-			dev_err(notifier_dev(notifier),
-				"failed binding %pfw (%d)\n",
-				asc->match.fwnode, ret);
+			dev_err(notifier_dev(notifier), "failed binding %pfw (%d)\n", asc->match.fwnode, ret);
 		goto err_unregister_subdev;
 	}
 
@@ -396,9 +380,7 @@ static int v4l2_async_match_notify(struct v4l2_async_notifier *notifier,
 		ret = v4l2_async_create_ancillary_links(notifier, sd);
 		if (ret) {
 			if (asc->match.type == V4L2_ASYNC_MATCH_TYPE_FWNODE)
-				dev_err(notifier_dev(notifier),
-					"failed creating links for %pfw (%d)\n",
-					asc->match.fwnode, ret);
+				dev_err(notifier_dev(notifier), "failed creating links for %pfw (%d)\n", asc->match.fwnode, ret);
 			goto err_call_unbind;
 		}
 	}
@@ -409,8 +391,7 @@ static int v4l2_async_match_notify(struct v4l2_async_notifier *notifier,
 	/* Move from the waiting list to notifier's done */
 	list_move(&asc->asc_entry, &notifier->done_list);
 
-	dev_err(notifier_dev(notifier), "v4l2-async: %s bound (ret %d)\n",
-		dev_name(sd->dev), ret);
+	dev_err(notifier_dev(notifier), "v4l2-async: %s bound (ret %d)\n", dev_name(sd->dev), ret);
 
 	/*
 	 * See if the sub-device has a notifier. If not, return here.
@@ -445,11 +426,11 @@ err_unregister_subdev:
 static int
 v4l2_async_nf_try_all_subdevs(struct v4l2_async_notifier *notifier)
 {
-	struct v4l2_device *v4l2_dev =
-		v4l2_async_nf_find_v4l2_dev(notifier);
+	struct v4l2_device *v4l2_dev = v4l2_async_nf_find_v4l2_dev(notifier);
 	struct v4l2_subdev *sd;
 
 	if (!v4l2_dev)
+		pr_info("v4l2-async.c - try_all_subdevs - No devices found OK\n");
 		return 0;
 
 	dev_err(notifier_dev(notifier), "v4l2-async: trying all sub-devices\n");
@@ -460,11 +441,12 @@ again:
 		int ret;
 
 		asc = v4l2_async_find_match(notifier, sd);
-		if (!asc)
+		if (!asc){
+			pr_info("v4l2-async.c - try_all_subdevs - No match found\n");
 			continue;
+		}
 
-		dev_err(notifier_dev(notifier),
-			"v4l2-async: match found, subdev %s\n", sd->name);
+		dev_err(notifier_dev(notifier), "v4l2-async: match found, subdev %s\n", sd->name);
 
 		ret = v4l2_async_match_notify(notifier, v4l2_dev, sd, asc);
 		if (ret < 0)
@@ -748,6 +730,7 @@ __v4l2_async_nf_add_fwnode(struct v4l2_async_notifier *notifier,
 
 	asc = kzalloc(asc_struct_size, GFP_KERNEL);
 	if (!asc)
+		pr_info("v4l2-async.c - add_fwnode - Invalid_1\n");
 		return ERR_PTR(-ENOMEM);
 
 	asc->notifier = notifier;
@@ -770,6 +753,7 @@ __v4l2_async_nf_add_fwnode_remote(struct v4l2_async_notifier *notif,
 
 	remote = fwnode_graph_get_remote_endpoint(endpoint);
 	if (!remote)
+		pr_info("v4l2-async.c - add_fwnode_remote - Invalid_1\n");
 		return ERR_PTR(-ENOTCONN);
 
 	asc = __v4l2_async_nf_add_fwnode(notif, remote, asc_struct_size);
@@ -790,6 +774,7 @@ __v4l2_async_nf_add_i2c(struct v4l2_async_notifier *notifier, int adapter_id,
 
 	asc = kzalloc(asc_struct_size, GFP_KERNEL);
 	if (!asc)
+		pr_info("v4l2-async.c - add_i2c - Invalid_1\n");
 		return ERR_PTR(-ENOMEM);
 
 	asc->notifier = notifier;
@@ -808,17 +793,18 @@ int v4l2_async_subdev_endpoint_add(struct v4l2_subdev *sd,
 {
 	struct v4l2_async_subdev_endpoint *ase;
 
-	dev_err(sd->dev, "Adding endpoint...\n");
+	dev_err(sd->dev, "Adding subdev endpoint...\n");
 	
 	ase = kmalloc(sizeof(*ase), GFP_KERNEL);
 	if (!ase)
+		pr_info("v4l2-async.c - subdev_endpoint_add - Invalid_1\n");
 		return -ENOMEM;
 
 	ase->endpoint = fwnode;
 	list_add(&ase->async_subdev_endpoint_entry,
 		 &sd->async_subdev_endpoint_list);
 
-	dev_err(sd->dev, "Endpoint added\n");
+	dev_err(sd->dev, "Subdev Endpoint added\n");
 	
 	return 0;
 }
@@ -827,11 +813,12 @@ EXPORT_SYMBOL_GPL(v4l2_async_subdev_endpoint_add);
 struct v4l2_async_connection *
 v4l2_async_connection_unique(struct v4l2_subdev *sd)
 {
-	if (!list_is_singular(&sd->asc_list))
+	if (!list_is_singular(&sd->asc_list)){
+		pr_info("v4l2-async.c - connection_unique - Invalid_1\n");
 		return NULL;
+	}
 
-	return list_first_entry(&sd->asc_list,
-				struct v4l2_async_connection, asc_subdev_entry);
+	return list_first_entry(&sd->asc_list, struct v4l2_async_connection, asc_subdev_entry);
 }
 EXPORT_SYMBOL_GPL(v4l2_async_connection_unique);
 
@@ -857,7 +844,7 @@ int __v4l2_async_register_subdev(struct v4l2_subdev *sd, struct module *module)
 	if (!sd->fwnode && sd->dev) {
 		sd->fwnode = dev_fwnode(sd->dev);
 	} else if (fwnode_graph_is_endpoint(sd->fwnode)) {
-		dev_warn(sd->dev, "sub-device fwnode is an endpoint!\n");
+		dev_err(sd->dev, "sub-device fwnode is an endpoint!\n");
 		return -EINVAL;
 	}
 
@@ -866,21 +853,26 @@ int __v4l2_async_register_subdev(struct v4l2_subdev *sd, struct module *module)
 	mutex_lock(&list_lock);
 
 	list_for_each_entry(notifier, &notifier_list, notifier_entry) {
-		struct v4l2_device *v4l2_dev =
-			v4l2_async_nf_find_v4l2_dev(notifier);
+		struct v4l2_device *v4l2_dev = v4l2_async_nf_find_v4l2_dev(notifier);
 
-		if (!v4l2_dev)
+		if (!v4l2_dev){
+			pr_info("v4l2-async.c - register_subdev - Invalid_1\n");
 			continue;
+		}
 
 		while ((asc = v4l2_async_find_match(notifier, sd))) {
 			ret = v4l2_async_match_notify(notifier, v4l2_dev, sd,
 						      asc);
-			if (ret)
+			if (ret){
+				pr_info("v4l2-async.c - register_subdev - Invalid_2\n");
 				goto err_unbind;
+			}
 
 			ret = v4l2_async_nf_try_complete(notifier);
-			if (ret)
+			if (ret){
+				pr_info("v4l2-async.c - register_subdev - Invalid_3\n");
 				goto err_unbind;
+			}
 		}
 	}
 
@@ -917,8 +909,10 @@ void v4l2_async_unregister_subdev(struct v4l2_subdev *sd)
 {
 	struct v4l2_async_connection *asc, *asc_tmp;
 
-	if (!sd->async_list.next)
+	if (!sd->async_list.next){
+		pr_info("v4l2-async.c - unregister_subdev - Nothing to unregister\n");
 		return;
+	}
 
 	v4l2_subdev_put_privacy_led(sd);
 
@@ -930,8 +924,7 @@ void v4l2_async_unregister_subdev(struct v4l2_subdev *sd)
 	sd->subdev_notifier = NULL;
 
 	if (sd->asc_list.next) {
-		list_for_each_entry_safe(asc, asc_tmp, &sd->asc_list,
-					 asc_subdev_entry) {
+		list_for_each_entry_safe(asc, asc_tmp, &sd->asc_list, asc_subdev_entry) {
 			v4l2_async_unbind_subdev_one(asc->notifier, asc);
 		}
 	}
@@ -943,8 +936,7 @@ void v4l2_async_unregister_subdev(struct v4l2_subdev *sd)
 }
 EXPORT_SYMBOL(v4l2_async_unregister_subdev);
 
-static void print_waiting_match(struct seq_file *s,
-				struct v4l2_async_match_desc *match)
+static void print_waiting_match(struct seq_file *s, struct v4l2_async_match_desc *match)
 {
 	switch (match->type) {
 	case V4L2_ASYNC_MATCH_TYPE_I2C:
