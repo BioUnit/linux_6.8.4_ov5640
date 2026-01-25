@@ -55,7 +55,7 @@ static void media_devnode_release(struct device *cd)
 		devnode->release(devnode);
 
 	kfree(devnode);
-	pr_debug("%s: Media Devnode Deallocated\n", __func__);
+	pr_info("%s: Media Devnode Deallocated\n", __func__);
 }
 
 static const struct bus_type media_bus_type = {
@@ -207,13 +207,13 @@ int __must_check media_devnode_register(struct media_device *mdev,
 {
 	int minor;
 	int ret;
-
+	pr_info("mc-devnode.c - devnode_register - Start\n");
 	/* Part 1: Find a free minor number */
 	mutex_lock(&media_devnode_lock);
 	minor = find_first_zero_bit(media_devnode_nums, MEDIA_NUM_DEVICES);
 	if (minor == MEDIA_NUM_DEVICES) {
 		mutex_unlock(&media_devnode_lock);
-		pr_err("could not get a free minor\n");
+		pr_info("mc-devnode.c - devnode_register - could not get a free minor\n");
 		kfree(devnode);
 		return -ENFILE;
 	}
@@ -243,10 +243,10 @@ int __must_check media_devnode_register(struct media_device *mdev,
 	ret = cdev_device_add(&devnode->cdev, &devnode->dev);
 	if (ret < 0) {
 		clear_bit(MEDIA_FLAG_REGISTERED, &devnode->flags);
-		pr_err("%s: cdev_device_add failed\n", __func__);
+		pr_info("mc-devnode.c - devnode_register - %s: cdev_device_add failed\n", __func__);
 		goto cdev_add_error;
 	}
-
+	pr_info("mc-devnode.c - devnode_register - Finished\n");
 	return 0;
 
 cdev_add_error:
@@ -256,6 +256,7 @@ cdev_add_error:
 	mutex_unlock(&media_devnode_lock);
 
 	put_device(&devnode->dev);
+	pr_info("mc-devnode.c - devnode_register - Failed\n");
 	return ret;
 }
 
@@ -293,14 +294,14 @@ static int __init media_devnode_init(void)
 	ret = alloc_chrdev_region(&media_dev_t, 0, MEDIA_NUM_DEVICES,
 				  MEDIA_NAME);
 	if (ret < 0) {
-		pr_warn("unable to allocate major\n");
+		pr_info("unable to allocate major\n");
 		return ret;
 	}
 
 	ret = bus_register(&media_bus_type);
 	if (ret < 0) {
 		unregister_chrdev_region(media_dev_t, MEDIA_NUM_DEVICES);
-		pr_warn("bus_register failed\n");
+		pr_info("bus_register failed\n");
 		return -EIO;
 	}
 
