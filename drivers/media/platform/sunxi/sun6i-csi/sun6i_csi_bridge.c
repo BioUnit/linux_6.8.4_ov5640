@@ -842,13 +842,13 @@ int sun6i_csi_bridge_setup(struct sun6i_csi_device *csi_dev)
 	notifier->ops = &sun6i_csi_bridge_notifier_ops;
 
 	sun6i_csi_bridge_source_setup(csi_dev, &bridge->source_parallel, SUN6I_CSI_PORT_PARALLEL, parallel_mbus_types);
-	//sun6i_csi_bridge_source_setup(csi_dev, &bridge->source_mipi_csi2, SUN6I_CSI_PORT_MIPI_CSI2, NULL);
+	sun6i_csi_bridge_source_setup(csi_dev, &bridge->source_mipi_csi2, SUN6I_CSI_PORT_MIPI_CSI2, NULL);
 
-	ret = v4l2_async_nf_register(notifier);
-	if (ret) {
-		dev_err(dev, "failed to register v4l2 async notifier: %d\n", ret);
-		goto error_v4l2_async_notifier;
-	}
+	//ret = v4l2_async_nf_register(notifier);
+	//if (ret) {
+	//	dev_err(dev, "failed to register v4l2 async notifier: %d\n", ret);
+	//	goto error_v4l2_async_notifier;
+	//}
 
 	dev_err(dev, "CSI Bridge setup finished\n");
 	
