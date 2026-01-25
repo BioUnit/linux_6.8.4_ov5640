@@ -897,22 +897,29 @@ static int sun6i_csi_capture_link_validate(struct media_link *link)
 	u32 mbus_code, bridge_field;
 	bool match;
 
+	pr_info("sun6i_csi_capture.c - capture_link_validate - Start\n");
+	
 	sun6i_csi_capture_dimensions(csi_dev, &capture_width, &capture_height);
 
 	sun6i_csi_capture_format(csi_dev, &pixelformat, &capture_field);
 	capture_format = sun6i_csi_capture_format_find(pixelformat);
-	if (WARN_ON(!capture_format))
+	if (WARN_ON(!capture_format)){
+		pr_info("sun6i_csi_capture.c - capture_link_validate - Capture format issue\n");
 		return -EINVAL;
+	}
 
 	sun6i_csi_bridge_dimensions(csi_dev, &bridge_width, &bridge_height);
 
 	sun6i_csi_bridge_format(csi_dev, &mbus_code, &bridge_field);
 	bridge_format = sun6i_csi_bridge_format_find(mbus_code);
-	if (WARN_ON(!bridge_format))
+	if (WARN_ON(!bridge_format)){
+		pr_info("sun6i_csi_capture.c - capture_link_validate - Bridge format issue\n");
 		return -EINVAL;
+	}
 
 	/* No cropping/scaling is supported. */
 	if (capture_width != bridge_width || capture_height != bridge_height) {
+		pr_info("sun6i_csi_capture.c - capture_link_validate - invalid dimensions\n");
 		v4l2_err(v4l2_dev,
 			 "invalid input/output dimensions: %ux%u/%ux%u\n",
 			 bridge_width, bridge_height, capture_width,
@@ -922,8 +929,10 @@ static int sun6i_csi_capture_link_validate(struct media_link *link)
 
 	format_info = v4l2_format_info(pixelformat);
 	/* Some formats are not listed. */
-	if (!format_info)
+	if (!format_info){
+		pr_info("sun6i_csi_capture.c - capture_link_validate - Some formats aren't listed...\n");
 		return 0;
+	}
 
 	if (format_info->pixel_enc == V4L2_PIXEL_ENC_BAYER &&
 	    bridge_format->input_format != SUN6I_CSI_INPUT_FMT_RAW)
@@ -952,9 +961,12 @@ static int sun6i_csi_capture_link_validate(struct media_link *link)
 			goto invalid;
 	}
 
+	pr_info("sun6i_csi_capture.c - capture_link_validate - Finished\n");
+	
 	return 0;
 
 invalid:
+	pr_info("sun6i_csi_capture.c - capture_link_validate - Error\n");
 	v4l2_err(v4l2_dev, "invalid input/output format combination\n");
 	return -EINVAL;
 }
@@ -978,9 +990,13 @@ int sun6i_csi_capture_setup(struct sun6i_csi_device *csi_dev)
 	struct v4l2_pix_format *pix_format = &format->fmt.pix;
 	int ret;
 
+	pr_info("sun6i_csi_capture.c - capture_setup - Start\n");
+	
 	/* This may happen with multiple bridge notifier bound calls. */
-	if (state->setup)
+	if (state->setup){
+		pr_info("sun6i_csi_capture.c - capture_setup - Multiple bridge notifier (ret 0)\n");
 		return 0;
+	}
 
 	/* State */
 
@@ -996,8 +1012,10 @@ int sun6i_csi_capture_setup(struct sun6i_csi_device *csi_dev)
 	pad->flags = MEDIA_PAD_FL_SINK | MEDIA_PAD_FL_MUST_CONNECT;
 
 	ret = media_entity_pads_init(&video_dev->entity, 1, pad);
-	if (ret < 0)
+	if (ret < 0){
+		pr_info("sun6i_csi_capture.c - capture_setup - media entity issue\n");
 		return ret;
+	}
 
 	/* Queue */
 
@@ -1016,6 +1034,7 @@ int sun6i_csi_capture_setup(struct sun6i_csi_device *csi_dev)
 
 	ret = vb2_queue_init(queue);
 	if (ret) {
+		pr_info("sun6i_csi_capture.c - capture_setup - vb2 issue\n");
 		v4l2_err(v4l2_dev, "failed to initialize vb2 queue: %d\n", ret);
 		goto error_media_entity;
 	}
@@ -1032,8 +1051,7 @@ int sun6i_csi_capture_setup(struct sun6i_csi_device *csi_dev)
 
 	/* Video Device */
 
-	strscpy(video_dev->name, SUN6I_CSI_CAPTURE_NAME,
-		sizeof(video_dev->name));
+	strscpy(video_dev->name, SUN6I_CSI_CAPTURE_NAME, sizeof(video_dev->name));
 	video_dev->device_caps = V4L2_CAP_VIDEO_CAPTURE | V4L2_CAP_STREAMING;
 	video_dev->vfl_dir = VFL_DIR_RX;
 	video_dev->release = video_device_release_empty;
@@ -1047,8 +1065,8 @@ int sun6i_csi_capture_setup(struct sun6i_csi_device *csi_dev)
 
 	ret = video_register_device(video_dev, VFL_TYPE_VIDEO, -1);
 	if (ret < 0) {
-		v4l2_err(v4l2_dev, "failed to register video device: %d\n",
-			 ret);
+		pr_info("sun6i_csi_capture.c - capture_setup - video dev registration issue\n");
+		v4l2_err(v4l2_dev, "failed to register video device: %d\n", ret);
 		goto error_media_entity;
 	}
 
@@ -1061,6 +1079,7 @@ int sun6i_csi_capture_setup(struct sun6i_csi_device *csi_dev)
 				    MEDIA_LNK_FL_ENABLED |
 				    MEDIA_LNK_FL_IMMUTABLE);
 	if (ret < 0) {
+		pr_info("sun6i_csi_capture.c - capture_setup - v4l2 link creation issue\n");
 		v4l2_err(v4l2_dev, "failed to create %s:%u -> %s:%u link\n",
 			 bridge_subdev->entity.name,
 			 SUN6I_CSI_BRIDGE_PAD_SOURCE,
@@ -1070,6 +1089,8 @@ int sun6i_csi_capture_setup(struct sun6i_csi_device *csi_dev)
 
 	state->setup = true;
 
+	pr_info("sun6i_csi_capture.c - capture_setup - Finished\n");
+	
 	return 0;
 
 error_video_device:
@@ -1088,6 +1109,8 @@ void sun6i_csi_capture_cleanup(struct sun6i_csi_device *csi_dev)
 	struct sun6i_csi_capture *capture = &csi_dev->capture;
 	struct video_device *video_dev = &capture->video_dev;
 
+	pr_info("sun6i_csi_capture.c - capture_cleanup - Start\n");
+	
 	/* This may happen if async registration failed to complete. */
 	if (!capture->state.setup)
 		return;
@@ -1097,4 +1120,6 @@ void sun6i_csi_capture_cleanup(struct sun6i_csi_device *csi_dev)
 	mutex_destroy(&capture->lock);
 
 	capture->state.setup = false;
+
+	pr_info("sun6i_csi_capture.c - capture_cleanup - Finished\n");
 }
