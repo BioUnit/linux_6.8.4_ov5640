@@ -338,24 +338,24 @@ static int sun6i_csi_probe(struct platform_device *platform_dev)
 		return ret;
 	dev_err(dev, "resources setup...OK\n");
 
-	//dev_err(dev, "isp detect...\n");
-	//ret = sun6i_csi_isp_detect(csi_dev);
-	//if (ret)
-	//	goto error_resources;
-	//dev_err(dev, "isp detect...OK\n");
+	dev_err(dev, "isp detect...\n");
+	ret = sun6i_csi_isp_detect(csi_dev);
+	if (ret)
+		goto error_resources;
+	dev_err(dev, "isp detect...OK\n");
 	/*
 	 * Register our own v4l2 and media devices when there is no ISP around.
 	 * Otherwise the ISP will use async subdev registration with our bridge,
 	 * which will provide v4l2 and media devices that are used to register
 	 * the video interface.
 	 */
-	//dev_err(dev, "isp available...\n");
-	//if (!csi_dev->isp_available) {
-	//	ret = sun6i_csi_v4l2_setup(csi_dev);
-	//	if (ret)
-	//		goto error_resources;
-	//}
-	//dev_err(dev, "isp available...OK\n");
+	dev_err(dev, "isp available...\n");
+	if (!csi_dev->isp_available) {
+		ret = sun6i_csi_v4l2_setup(csi_dev);
+		if (ret)
+			goto error_resources;
+	}
+	dev_err(dev, "isp available...OK\n");
 
 	dev_err(dev, "bridge setup...\n");
 	ret = sun6i_csi_bridge_setup(csi_dev);
