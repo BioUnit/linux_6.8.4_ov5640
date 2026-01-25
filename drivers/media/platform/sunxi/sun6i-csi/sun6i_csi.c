@@ -122,7 +122,7 @@ static int sun6i_csi_v4l2_setup(struct sun6i_csi_device *csi_dev)
 error_media:
 	media_device_unregister(media_dev);
 	media_device_cleanup(media_dev);
-
+	pr_info("sun6i_csi.c - v4l2_setup - Failed\n");
 	return ret;
 }
 
@@ -393,6 +393,8 @@ static void sun6i_csi_remove(struct platform_device *pdev)
 {
 	struct sun6i_csi_device *csi_dev = platform_get_drvdata(pdev);
 
+	pr_info("sun6i_csi.c - csi_remove - Start\n");
+	
 	sun6i_csi_capture_cleanup(csi_dev);
 	sun6i_csi_bridge_cleanup(csi_dev);
 
