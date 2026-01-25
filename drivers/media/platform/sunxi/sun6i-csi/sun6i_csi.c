@@ -28,8 +28,10 @@
 int sun6i_csi_isp_complete(struct sun6i_csi_device *csi_dev,
 			   struct v4l2_device *v4l2_dev)
 {
-	if (csi_dev->v4l2_dev && csi_dev->v4l2_dev != v4l2_dev)
+	if (csi_dev->v4l2_dev && csi_dev->v4l2_dev != v4l2_dev){
+		pr_info("sun6i_csi.c - csi_isp_complete() - invalid\n");
 		return -EINVAL;
+	}
 
 	csi_dev->v4l2_dev = v4l2_dev;
 	csi_dev->media_dev = v4l2_dev->mdev;
@@ -55,8 +57,7 @@ static int sun6i_csi_isp_detect(struct sun6i_csi_device *csi_dev)
 	fwnode_handle_put(handle);
 
 	if (!IS_ENABLED(CONFIG_VIDEO_SUN6I_ISP)) {
-		dev_warn(dev,
-			 "ISP link is detected but not enabled in kernel config!");
+		dev_err(dev, "ISP link is detected but not enabled in kernel config!");
 		return 0;
 	}
 
@@ -238,6 +239,7 @@ static int sun6i_csi_resources_setup(struct sun6i_csi_device *csi_dev,
 
 	variant = of_device_get_match_data(dev);
 	if (!variant)
+		pr_info("sun6i_csi.c - resources_setup() - invalid\n");
 		return -EINVAL;
 
 	/* Registers */
