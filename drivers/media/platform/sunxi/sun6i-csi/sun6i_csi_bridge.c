@@ -171,6 +171,7 @@ sun6i_csi_bridge_format_find(u32 mbus_code)
 		if (sun6i_csi_bridge_formats[i].mbus_code == mbus_code)
 			return &sun6i_csi_bridge_formats[i];
 
+	pr_info("cs_bridge.c - formwat_find() - NULL\n");
 	return NULL;
 }
 
@@ -236,7 +237,9 @@ sun6i_csi_bridge_configure_parallel(struct sun6i_csi_device *csi_dev)
 	unsigned int flags = endpoint->bus.parallel.flags;
 	u32 field;
 	u32 value = SUN6I_CSI_IF_CFG_IF_CSI;
+	
 	dev_err(dev, "Config parallel start...\n");
+	
 	sun6i_csi_bridge_format(csi_dev, NULL, &field);
 
 	if (field == V4L2_FIELD_INTERLACED ||
@@ -324,6 +327,8 @@ sun6i_csi_bridge_configure_mipi_csi2(struct sun6i_csi_device *csi_dev)
 	u32 value = SUN6I_CSI_IF_CFG_IF_MIPI;
 	u32 field;
 
+	pr_info("cs_bridge.c - mipi_csi2 - Start\n");
+	
 	sun6i_csi_bridge_format(csi_dev, NULL, &field);
 
 	if (field == V4L2_FIELD_INTERLACED ||
@@ -334,6 +339,7 @@ sun6i_csi_bridge_configure_mipi_csi2(struct sun6i_csi_device *csi_dev)
 		value |= SUN6I_CSI_IF_CFG_SRC_TYPE_PROGRESSIVE;
 
 	regmap_write(regmap, SUN6I_CSI_IF_CFG_REG, value);
+	pr_info("cs_bridge.c - mipi_csi2 - Finished\n");
 }
 
 static void sun6i_csi_bridge_configure_format(struct sun6i_csi_device *csi_dev)
@@ -346,10 +352,13 @@ static void sun6i_csi_bridge_configure_format(struct sun6i_csi_device *csi_dev)
 	u8 input_format, input_yuv_seq, output_format;
 	u32 value = 0;
 
+	pr_info("cs_bridge.c - bridge_configure_format - Start\n");
+	
 	sun6i_csi_bridge_format(csi_dev, &mbus_code, &field);
 
 	bridge_format = sun6i_csi_bridge_format_find(mbus_code);
 	if (WARN_ON(!bridge_format))
+		pr_info("cs_bridge.c - bridge_configure_format - Invalid_1\n");
 		return;
 
 	input_format = bridge_format->input_format;
@@ -360,6 +369,7 @@ static void sun6i_csi_bridge_configure_format(struct sun6i_csi_device *csi_dev)
 
 		capture_format = sun6i_csi_capture_format_find(pixelformat);
 		if (WARN_ON(!capture_format))
+			pr_info("cs_bridge.c - bridge_configure_format - Invalid_2\n");
 			return;
 
 		if (capture_format->input_format_raw)
@@ -389,6 +399,7 @@ static void sun6i_csi_bridge_configure_format(struct sun6i_csi_device *csi_dev)
 		value |= SUN6I_CSI_CH_CFG_FIELD_SEL_EITHER;
 
 	regmap_write(regmap, SUN6I_CSI_CH_CFG_REG, value);
+	pr_info("cs_bridge.c - bridge_configure_format - Finished\n");
 }
 
 static void sun6i_csi_bridge_configure(struct sun6i_csi_device *csi_dev,
@@ -661,7 +672,7 @@ sun6i_csi_bridge_notifier_bound(struct v4l2_async_notifier *notifier,
 	int ret;
 
 	struct device *dev = csi_dev->dev;
-	dev_err(dev, "Bound start...\n");
+	pr_info("cs_bridge.c - bridge_notifier_bound - Start\n");
 	
 	switch (source->endpoint.base.port) {
 	case SUN6I_CSI_PORT_PARALLEL:
@@ -688,7 +699,7 @@ sun6i_csi_bridge_notifier_bound(struct v4l2_async_notifier *notifier,
 		if (ret)
 			return ret;
 	}
-	dev_err(dev, "Bound finished\n");
+	pr_info("cs_bridge.c - bridge_notifier_bound - Finished\n");
 	return sun6i_csi_bridge_link(csi_dev, SUN6I_CSI_BRIDGE_PAD_SINK,
 				     remote_subdev, enabled);
 }
@@ -701,7 +712,9 @@ sun6i_csi_bridge_notifier_complete(struct v4l2_async_notifier *notifier)
 			     bridge.notifier);
 	struct v4l2_device *v4l2_dev = &csi_dev->v4l2.v4l2_dev;
 	struct device *dev = csi_dev->dev;
+	
 	dev_err(dev, "Bridge notifier start...\n");
+	
 	if (csi_dev->isp_available)
 		return 0;
 
@@ -730,8 +743,10 @@ static int sun6i_csi_bridge_source_setup(struct sun6i_csi_device *csi_dev,
 	int ret;
 
 	dev_err(dev, "CSI Bridge Source setup start...\n");
+	
 	handle = fwnode_graph_get_endpoint_by_id(dev_fwnode(dev), port, 0, 0);
 	if (!handle)
+		pr_info("cs_bridge.c - bridge_source_setup - Invalid_1\n");
 		return -ENODEV;
 
 	ret = v4l2_fwnode_endpoint_parse(handle, endpoint);
@@ -750,13 +765,12 @@ static int sun6i_csi_bridge_source_setup(struct sun6i_csi_device *csi_dev,
 		}
 
 		if (!valid) {
-			dev_err(dev, "unsupported bus type for port %d\n",
-				port);
+			dev_err(dev, "unsupported bus type for port %d\n", port);
 			ret = -EINVAL;
 			goto complete;
 		}
 	}
-
+	pr_info("cs_bridge.c - bridge_source_setup - Adding fwnode_remote\n");
 	bridge_async_subdev = v4l2_async_nf_add_fwnode_remote(notifier, handle, struct sun6i_csi_bridge_async_subdev);
 	if (IS_ERR(bridge_async_subdev)) {
 		ret = PTR_ERR(bridge_async_subdev);
@@ -771,7 +785,6 @@ complete:
 	dev_err(dev, "CSI Bridge Source setup completed\n");
 	fwnode_handle_put(handle);
 
-	dev_err(dev, "Error, CSI Bridge Source setup not completed\n");
 	return ret;
 }
 
