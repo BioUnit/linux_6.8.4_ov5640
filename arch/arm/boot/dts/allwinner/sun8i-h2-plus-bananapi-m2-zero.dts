@@ -275,7 +275,7 @@
 			data-shift = <2>;
 			hsync-active = <1>; 
 			vsync-active = <0>; 
-			//data-active = <1>;  
+			data-active = <1>;  
 			pclk-sample = <1>;  
 		};
 	};
@@ -310,7 +310,7 @@
 				data-shift = <2>;
 				hsync-active = <1>;
 				vsync-active = <0>;
-				//data-active = <1>;
+				data-active = <1>;
 				pclk-sample = <1>;
 			};
 		};
