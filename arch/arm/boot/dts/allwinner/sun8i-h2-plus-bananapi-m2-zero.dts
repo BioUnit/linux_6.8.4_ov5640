@@ -257,14 +257,6 @@
 	status = "okay";
 };
 
-
-&pio {
-	csi_mclk_pin: csi-mclk {
-		pins = "PE1";
-		function = "csi";
-	};
-};
-
 &csi{
 	status = "okay";
 	port {
@@ -272,7 +264,7 @@
 			remote-endpoint = <&ov5640_to_parallel>;
 			//bus-type = <MEDIA_BUS_TYPE_PARALLEL>;
 			bus-width = <8>;
-			//data-shift = <2>;
+			data-shift = <2>;
 			hsync-active = <1>; 
 			vsync-active = <0>; 
 			data-active = <1>;  
@@ -314,5 +306,12 @@
 				pclk-sample = <1>;
 			};
 		};
+	};
+};
+
+&pio {
+	csi_mclk_pin: csi-mclk {
+		pins = "PE1";
+		function = "csi";
 	};
 };
